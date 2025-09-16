@@ -1,0 +1,6 @@
+[
+  { "id":"C01", "name":"Pizza", "sqm":16, "power_kw":12, "status":"available" },
+  { "id":"C02", "name":"Burger & BBQ", "sqm":16, "power_kw":12, "status":"reserved" },
+  { "id":"C03", "name":"Sushi", "sqm":14, "power_kw":10, "status":"occupied" },
+  { "id":"C04", "name":"Gelato & Retail", "sqm":8,  "power_kw":7,  "status":"available", "exhaust": false, "gas": false }
+]

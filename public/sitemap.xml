@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://ode-food-hall.lovable.app/</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/chefs-table</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en/chefs-table"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/chefs-table"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/taste-compass</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en/taste-compass"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/taste-compass"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/wine-staircase</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en/wine-staircase"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/wine-staircase"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/kitchens</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en/kitchens"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/kitchens"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/lounge</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en/lounge"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/lounge"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/events</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ode-food-hall.lovable.app/en/events"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://ode-food-hall.lovable.app/events"/>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/photos</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/experiences</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/contact</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ode-food-hall.lovable.app/privacy-policy</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
