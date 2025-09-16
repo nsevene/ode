@@ -1,187 +1,395 @@
-import { useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useCallback, useEffect, useRef } from 'react';
+import { useAuth } from '@/store/authStore';
 
-// Enhanced analytics with real-time data sync
+// Analytics event types
+export type AnalyticsEvent = 
+  | 'page_view'
+  | 'button_click'
+  | 'form_submit'
+  | 'search'
+  | 'booking_created'
+  | 'booking_cancelled'
+  | 'order_created'
+  | 'order_completed'
+  | 'user_signup'
+  | 'user_login'
+  | 'user_logout'
+  | 'error_occurred'
+  | 'feature_used'
+  | 'conversion'
+  | 'custom';
 
-interface AnalyticsEvent {
-  event_name: string;
-  user_id?: string;
-  session_id: string;
+export interface AnalyticsEventData {
+  event: AnalyticsEvent;
   properties?: Record<string, any>;
-  page_url?: string;
-  timestamp: string;
+  userId?: string;
+  sessionId?: string;
+  timestamp?: Date;
+  page?: string;
+  referrer?: string;
+  userAgent?: string;
 }
 
+// Analytics hook
 export const useAnalytics = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const sessionId = useRef<string>(generateSessionId());
+  const eventQueue = useRef<AnalyticsEventData[]>([]);
+  const isOnline = useRef<boolean>(navigator.onLine);
 
-  // Generate or get session ID
-  const getSessionId = () => {
-    let sessionId = sessionStorage.getItem('analytics_session_id');
-    if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem('analytics_session_id', sessionId);
-    }
-    return sessionId;
-  };
+  // Generate unique session ID
+  function generateSessionId(): string {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
 
   // Track page view
-  const trackPageView = (page: string) => {
+  const trackPageView = useCallback((page: string, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'page_view',
+      properties: {
+        page,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page,
+      referrer: document.referrer,
+      userAgent: navigator.userAgent,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track button clicks
+  const trackButtonClick = useCallback((buttonName: string, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'button_click',
+      properties: {
+        button_name: buttonName,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track form submissions
+  const trackFormSubmit = useCallback((formName: string, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'form_submit',
+      properties: {
+        form_name: formName,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track searches
+  const trackSearch = useCallback((query: string, results?: number, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'search',
+      properties: {
+        query,
+        results_count: results,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track bookings
+  const trackBooking = useCallback((action: 'created' | 'cancelled' | 'updated', properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: action === 'created' ? 'booking_created' : 
+             action === 'cancelled' ? 'booking_cancelled' : 'booking_updated',
+      properties: {
+        action,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track orders
+  const trackOrder = useCallback((action: 'created' | 'completed' | 'cancelled', properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: action === 'created' ? 'order_created' : 
+             action === 'completed' ? 'order_completed' : 'order_cancelled',
+      properties: {
+        action,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track user actions
+  const trackUserAction = useCallback((action: 'signup' | 'login' | 'logout', properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: action === 'signup' ? 'user_signup' : 
+             action === 'login' ? 'user_login' : 'user_logout',
+      properties: {
+        action,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track errors
+  const trackError = useCallback((error: Error, context?: string, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'error_occurred',
+      properties: {
+        error_message: error.message,
+        error_stack: error.stack,
+        context,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track feature usage
+  const trackFeatureUsage = useCallback((feature: string, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'feature_used',
+      properties: {
+        feature,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track conversions
+  const trackConversion = useCallback((conversionType: string, value?: number, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'conversion',
+      properties: {
+        conversion_type: conversionType,
+        value,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Track custom events
+  const trackCustomEvent = useCallback((eventName: string, properties?: Record<string, any>) => {
+    const eventData: AnalyticsEventData = {
+      event: 'custom',
+      properties: {
+        custom_event: eventName,
+        ...properties,
+      },
+      userId: user?.id,
+      sessionId: sessionId.current,
+      timestamp: new Date(),
+      page: window.location.pathname,
+    };
+
+    sendEvent(eventData);
+  }, [user]);
+
+  // Send event to analytics service
+  const sendEvent = useCallback((eventData: AnalyticsEventData) => {
+    // Add to queue if offline
+    if (!isOnline.current) {
+      eventQueue.current.push(eventData);
+      return;
+    }
+
+    // Send to Google Analytics
+    if (typeof gtag !== 'undefined') {
+      gtag('event', eventData.event, {
+        event_category: 'user_interaction',
+        event_label: eventData.properties?.button_name || eventData.properties?.form_name || 'unknown',
+        value: eventData.properties?.value || 0,
+        custom_parameters: eventData.properties,
+        user_id: eventData.userId,
+        session_id: eventData.sessionId,
+      });
+    }
+
+    // Send to custom analytics endpoint
+    sendToCustomAnalytics(eventData);
+  }, []);
+
+  // Send to custom analytics endpoint
+  const sendToCustomAnalytics = useCallback(async (eventData: AnalyticsEventData) => {
     try {
-      const event: AnalyticsEvent = {
-        event_name: 'page_view',
-        user_id: user?.id,
-        session_id: getSessionId(),
-        properties: { page },
-        page_url: window.location.href,
-        timestamp: new Date().toISOString(),
-      };
+      // In production, you would send this to your analytics service
+      console.log('Analytics event:', eventData);
       
-      // Store in localStorage for now (could be sent to analytics service)
-      const events = JSON.parse(localStorage.getItem('analytics_events') || '[]');
-      events.push(event);
-      localStorage.setItem('analytics_events', JSON.stringify(events.slice(-100))); // Keep last 100 events
+      // Example: Send to Supabase
+      // await supabase.from('analytics_events').insert([eventData]);
     } catch (error) {
-      console.warn('Error tracking page view:', error);
+      console.error('Failed to send analytics event:', error);
     }
-  };
+  }, []);
 
-  // Track custom event with enhanced data
-  const track = (eventName: string, properties?: Record<string, any>) => {
-    try {
-      const event: AnalyticsEvent = {
-        event_name: eventName,
-        user_id: user?.id,
-        session_id: getSessionId(),
-        properties: {
-          ...properties,
-          user_agent: navigator.userAgent,
-          screen_resolution: `${screen.width}x${screen.height}`,
-          viewport_size: `${window.innerWidth}x${window.innerHeight}`,
-          referrer: document.referrer,
-          timestamp_local: new Date().toLocaleString(),
-        },
-        page_url: window.location.href,
-        timestamp: new Date().toISOString(),
-      };
-
-      // Store locally
-      const events = JSON.parse(localStorage.getItem('analytics_events') || '[]');
-      events.push(event);
-      localStorage.setItem('analytics_events', JSON.stringify(events.slice(-100)));
-
-      // Send to external analytics if available
-      if ((window as any).gtag) {
-        (window as any).gtag('event', eventName, properties);
-      }
-      if ((window as any).fbq) {
-        (window as any).fbq('trackCustom', eventName, properties);
-      }
-
-      // Also log to console for debugging
-      console.log('Analytics Event:', event);
-
-      // Try to sync to database for persistent analytics
-      if (user?.id) {
-        syncEventToDatabase(event).catch(console.error);
-      }
-    } catch (error) {
-      console.warn('Error tracking event:', error);
-    }
-  };
-
-  // Sync event to Supabase for persistent analytics (using existing tables)
-  const syncEventToDatabase = async (event: AnalyticsEvent) => {
-    try {
-      // For now, we'll store analytics data locally until we create the analytics_events table
-      // We can use user_notifications table as a temporary solution or create the table via migration
-      console.log('Analytics event logged:', event);
+  // Process queued events when coming back online
+  useEffect(() => {
+    const handleOnline = () => {
+      isOnline.current = true;
       
-      // Optionally store in user_notifications for tracking user actions
-      if (event.user_id && ['booking_completed', 'conversion', 'purchase'].includes(event.event_name)) {
-        await supabase.from('user_notifications').insert({
-          user_id: event.user_id,
-          type: 'analytics',
-          title: 'Action Tracked',
-          message: `${event.event_name} completed`,
-          data: event.properties,
-        });
+      // Process queued events
+      while (eventQueue.current.length > 0) {
+        const event = eventQueue.current.shift();
+        if (event) {
+          sendEvent(event);
+        }
       }
-    } catch (error) {
-      console.warn('Failed to sync analytics event:', error);
-    }
-  };
+    };
 
-  // Track booking events
-  const trackBooking = (step: string, bookingData?: any) => {
-    track(`booking_${step}`, {
-      experience_type: bookingData?.experience_type,
-      guest_count: bookingData?.guest_count,
-      booking_date: bookingData?.booking_date,
-      time_slot: bookingData?.time_slot,
-      ...bookingData
-    });
-  };
+    const handleOffline = () => {
+      isOnline.current = false;
+    };
 
-  // Track upsell events
-  const trackUpsell = (action: string, upsellData?: any) => {
-    track(`upsell_${action}`, upsellData);
-  };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-  // Track referral events
-  const trackReferral = (action: string, referralData?: any) => {
-    track(`referral_${action}`, referralData);
-  };
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [sendEvent]);
 
-  // Track loyalty events
-  const trackLoyalty = (action: string, loyaltyData?: any) => {
-    track(`loyalty_${action}`, loyaltyData);
-  };
-
-  // Get analytics data for admin
-  const getAnalyticsData = () => {
-    return JSON.parse(localStorage.getItem('analytics_events') || '[]');
-  };
-
-  // Enhanced conversion tracking
-  const trackConversion = (conversionType: string, value?: number, metadata?: any) => {
-    track('conversion', {
-      conversion_type: conversionType,
-      conversion_value: value,
-      ...metadata,
-    });
-  };
-
-  // Track user engagement metrics
-  const trackEngagement = (engagementType: string, duration?: number) => {
-    track('engagement', {
-      engagement_type: engagementType,
-      duration_seconds: duration,
-      timestamp: Date.now(),
-    });
-  };
-
-  // Track performance metrics
-  const trackPerformance = (metric: string, value: number) => {
-    track('performance', {
-      metric_name: metric,
-      metric_value: value,
-      user_agent: navigator.userAgent,
-    });
-  };
+  // Track page views on route changes
+  useEffect(() => {
+    trackPageView(window.location.pathname);
+  }, [trackPageView]);
 
   return {
     trackPageView,
-    track,
+    trackButtonClick,
+    trackFormSubmit,
+    trackSearch,
     trackBooking,
-    trackUpsell,
-    trackReferral,
-    trackLoyalty,
+    trackOrder,
+    trackUserAction,
+    trackError,
+    trackFeatureUsage,
     trackConversion,
-    trackEngagement,
-    trackPerformance,
-    getAnalyticsData,
-    syncEventToDatabase,
+    trackCustomEvent,
+  };
+};
+
+// Performance analytics hook
+export const usePerformanceAnalytics = () => {
+  const { trackCustomEvent } = useAnalytics();
+
+  const trackPageLoad = useCallback(() => {
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    
+    if (navigation) {
+      trackCustomEvent('page_load_performance', {
+        load_time: navigation.loadEventEnd - navigation.loadEventStart,
+        dom_content_loaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+        first_paint: performance.getEntriesByName('first-paint')[0]?.startTime || 0,
+        first_contentful_paint: performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0,
+        largest_contentful_paint: performance.getEntriesByName('largest-contentful-paint')[0]?.startTime || 0,
+      });
+    }
+  }, [trackCustomEvent]);
+
+  const trackResourceLoad = useCallback((resourceName: string, loadTime: number) => {
+    trackCustomEvent('resource_load_performance', {
+      resource_name: resourceName,
+      load_time: loadTime,
+    });
+  }, [trackCustomEvent]);
+
+  const trackUserInteraction = useCallback((interactionType: string, delay: number) => {
+    trackCustomEvent('user_interaction_performance', {
+      interaction_type: interactionType,
+      delay,
+    });
+  }, [trackCustomEvent]);
+
+  return {
+    trackPageLoad,
+    trackResourceLoad,
+    trackUserInteraction,
+  };
+};
+
+// Business analytics hook
+export const useBusinessAnalytics = () => {
+  const { trackCustomEvent } = useAnalytics();
+
+  const trackRevenue = useCallback((amount: number, currency: string = 'USD', source: string) => {
+    trackCustomEvent('revenue', {
+      amount,
+      currency,
+      source,
+    });
+  }, [trackCustomEvent]);
+
+  const trackCustomerAcquisition = useCallback((source: string, cost?: number) => {
+    trackCustomEvent('customer_acquisition', {
+      source,
+      cost,
+    });
+  }, [trackCustomEvent]);
+
+  const trackRetention = useCallback((period: string, rate: number) => {
+    trackCustomEvent('retention', {
+      period,
+      rate,
+    });
+  }, [trackCustomEvent]);
+
+  return {
+    trackRevenue,
+    trackCustomerAcquisition,
+    trackRetention,
   };
 };

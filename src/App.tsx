@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Suspense } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecovery from "@/components/error/ChunkRecovery";
@@ -12,6 +12,33 @@ import DemoModeNotification from "@/components/DemoModeNotification";
 import PortalNavigation from "@/components/layout/PortalNavigation";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { CONFIG } from "@/lib/config";
+
+// Lazy loaded pages
+import { LazyPages } from "@/pages/LazyPages";
+
+// Loading components
+import { LoadingSpinner, FullPageLoading } from "@/components/LoadingStates";
+
+// Accessibility components
+import { SkipToMainContent, SkipToNavigation } from "@/components/SkipLink";
+
+// Notification system
+import { NotificationProvider } from "@/components/NotificationSystem";
+
+// Performance monitoring
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+
+// Mobile navigation
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+
+// State management
+import { useAuthStore } from "@/store/authStore";
+
+// Analytics
+import { useAnalytics } from "@/hooks/useAnalytics";
+
+// SEO
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 
 
