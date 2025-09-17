@@ -82,6 +82,7 @@ import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
+import PromoteToAdmin from "./pages/admin/PromoteToAdmin";
 import AdminCheck from "./components/AdminCheck";
 import GamesAdmin from "./pages/GamesAdmin";
 import NotFound from "./pages/NotFound";
@@ -431,6 +432,10 @@ function App() {
                             <SecureRoute requiredRole="admin">
                               <UserManagement />
                             </SecureRoute>
+                          } />
+                          
+                          <Route path="/admin/promote" element={
+                            <PromoteToAdmin />
                           } />
                           
                           {/* 404 fallback */}
