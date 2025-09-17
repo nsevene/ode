@@ -59,6 +59,69 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ loading: true });
           
+          // Проверяем, используем ли мы mock Supabase
+          const isMockMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'mock';
+          
+          if (isMockMode) {
+            // Mock аутентификация для разработки
+            console.log('🔧 Using mock authentication for development');
+            
+            // Проверяем стандартные данные админа
+            if (email === 'admin@odefoodhall.com' && password === 'Admin123!') {
+              const mockUser = {
+                id: 'admin-mock-' + Date.now(),
+                email: email,
+                user_metadata: {
+                  full_name: 'System Administrator'
+                }
+              };
+              
+              const mockSession = {
+                access_token: 'mock-token-' + Date.now(),
+                refresh_token: 'mock-refresh-' + Date.now(),
+                user: mockUser
+              };
+
+              set({ 
+                user: mockUser, 
+                session: mockSession, 
+                isAuthenticated: true,
+                loading: false,
+                role: 'admin',
+                permissions: ['admin:read', 'admin:write', 'admin:delete', 'admin:manage']
+              });
+
+              return { success: true };
+            }
+            
+            // Для других пользователей создаем guest
+            const mockUser = {
+              id: 'user-mock-' + Date.now(),
+              email: email,
+              user_metadata: {
+                full_name: 'Guest User'
+              }
+            };
+            
+            const mockSession = {
+              access_token: 'mock-token-' + Date.now(),
+              refresh_token: 'mock-refresh-' + Date.now(),
+              user: mockUser
+            };
+
+            set({ 
+              user: mockUser, 
+              session: mockSession, 
+              isAuthenticated: true,
+              loading: false,
+              role: 'guest',
+              permissions: ['guest:read']
+            });
+
+            return { success: true };
+          }
+          
+          // Реальная аутентификация через Supabase
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,

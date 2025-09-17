@@ -12,8 +12,8 @@ export default function AdminCheck({ children }: AdminCheckProps) {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-  // Пропускаем проверку для маршрутов создания тестового админа и отладки
-  if (location.pathname === '/admin/create-test' || location.pathname === '/admin/debug') {
+  // Пропускаем проверку для маршрутов создания тестового админа, отладки и готовых данных
+  if (location.pathname === '/admin/create-test' || location.pathname === '/admin/debug' || location.pathname === '/admin/credentials') {
     return <>{children}</>;
   }
 

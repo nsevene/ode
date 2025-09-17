@@ -86,6 +86,7 @@ import PromoteToAdmin from "./pages/admin/PromoteToAdmin";
 import ForceUpdateRole from "./pages/admin/ForceUpdateRole";
 import CreateTestAdmin from "./pages/admin/CreateTestAdmin";
 import DebugAdmin from "./pages/admin/DebugAdmin";
+import AdminCredentials from "./pages/admin/AdminCredentials";
 import AdminCheck from "./components/AdminCheck";
 import GamesAdmin from "./pages/GamesAdmin";
 import NotFound from "./pages/NotFound";
@@ -451,6 +452,10 @@ function App() {
                           
                           <Route path="/admin/debug" element={
                             <DebugAdmin />
+                          } />
+                          
+                          <Route path="/admin/credentials" element={
+                            <AdminCredentials />
                           } />
                           
                           {/* 404 fallback */}
