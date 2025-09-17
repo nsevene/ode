@@ -68,6 +68,7 @@ export const useAuthStore = create<AuthStore>()(
             user_metadata: {
               full_name: 'Test Administrator'
             },
+            app_metadata: {},
             aud: 'authenticated',
             role: 'authenticated',
             email_confirmed_at: new Date().toISOString(),
@@ -114,6 +115,7 @@ export const useAuthStore = create<AuthStore>()(
             user_metadata: {
               full_name: 'New Test Administrator'
             },
+            app_metadata: {},
             aud: 'authenticated',
             role: 'authenticated',
             email_confirmed_at: new Date().toISOString(),
@@ -283,7 +285,6 @@ export const useAuthActions = () => useAuthStore((state) => ({
   checkRole: state.checkRole,
   hasPermission: state.hasPermission,
   hasRole: state.hasRole,
-  becomeInstantAdmin: state.becomeInstantAdmin,
   reset: state.reset,
 }));
 
