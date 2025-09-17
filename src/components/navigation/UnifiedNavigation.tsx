@@ -391,7 +391,7 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
     <>
       {/* Desktop Navigation */}
       <nav className={cn(
-        "bg-card/95 backdrop-blur-lg shadow-soft sticky top-0 z-40 border-b border-border transition-all duration-300 hover:shadow-medium",
+        "bg-card/95 backdrop-blur-lg shadow-soft sticky top-0 z-[60] border-b border-border transition-all duration-300 hover:shadow-medium",
         className
       )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -416,7 +416,7 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
                   <span>More</span>
                 </button>
                 
-                <div className="absolute top-full right-0 mt-2 w-56 bg-card/95 backdrop-blur-lg rounded-xl shadow-elegant border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div className="absolute top-full right-0 mt-2 w-56 bg-card/95 backdrop-blur-lg rounded-xl shadow-elegant border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[100]">
                   <div className="py-2 space-y-1">
                     {getItemsByCategory('secondary').map((item) => renderNavItem(item, true))}
                   </div>

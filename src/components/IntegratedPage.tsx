@@ -3,7 +3,7 @@ import { usePageTracking, useInteractionTracking } from '@/hooks/useAnalyticsInt
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationHelpers } from '@/components/NotificationSystem';
 import { LoadingSpinner, FullPageLoading } from '@/components/LoadingStates';
-import { PageSEO } from '@/components/SEO/PageSEO';
+import { PageSEO } from '@/components/seo/PageSEO';
 
 interface IntegratedPageProps {
   children: React.ReactNode;
