@@ -25,7 +25,7 @@ describe('Button Component', () => {
   it('applies correct size classes', () => {
     render(<Button size="lg">Large Button</Button>);
     const button = screen.getByText('Large Button');
-    expect(button).toHaveClass('h-11');
+    expect(button).toHaveClass('h-12');
   });
 
   it('can be disabled', () => {

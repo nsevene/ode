@@ -52,7 +52,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-4">
+    <div className="flex flex-col items-center justify-center p-8 space-y-4" role="status" aria-label="Loading">
       <div className="relative">
         <Loader2 className={`${sizes[size]} animate-spin text-primary`} />
         <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse" />

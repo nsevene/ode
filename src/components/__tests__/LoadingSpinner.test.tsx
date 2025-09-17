@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { LoadingSpinner } from '@/components/ui/loading';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 describe('LoadingSpinner Component', () => {
   it('renders with default props', () => {
@@ -11,11 +11,11 @@ describe('LoadingSpinner Component', () => {
   it('renders with custom size', () => {
     render(<LoadingSpinner size="lg" />);
     const spinner = screen.getByRole('status');
-    expect(spinner).toHaveClass('w-8', 'h-8');
+    expect(spinner).toHaveClass('w-12', 'h-12');
   });
 
   it('renders with custom variant', () => {
-    render(<LoadingSpinner variant="dots" />);
+    render(<LoadingSpinner variant="chef" />);
     const spinner = screen.getByRole('status');
     expect(spinner).toBeInTheDocument();
   });

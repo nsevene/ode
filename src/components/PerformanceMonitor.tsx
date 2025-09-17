@@ -383,3 +383,5 @@ export const PerformanceSuggestions: React.FC = () => {
     </div>
   );
 };
+
+export default PerformanceMonitor;

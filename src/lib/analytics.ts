@@ -182,3 +182,12 @@ export class BusinessMetrics {
 export const analytics = AnalyticsManager.getInstance();
 export const performanceMonitor = PerformanceMonitor.getInstance();
 export const businessMetrics = BusinessMetrics.getInstance();
+
+// Export functions for compatibility
+export const track = (event: string, properties?: Record<string, any>) => {
+  analytics.track(event, properties);
+};
+
+export const trackZoneClick = (zone: string, properties?: Record<string, any>) => {
+  analytics.track('zone_click', { zone, ...properties });
+};

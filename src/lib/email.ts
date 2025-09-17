@@ -1,7 +1,9 @@
 // Email configuration and utilities
 import { Resend } from 'resend';
 
-const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
+// Initialize Resend with API key or fallback for development
+const apiKey = import.meta.env.VITE_RESEND_API_KEY || 'dev-key';
+const resend = new Resend(apiKey);
 
 export interface EmailTemplate {
   to: string;
@@ -12,6 +14,16 @@ export interface EmailTemplate {
 
 export const sendEmail = async (template: EmailTemplate) => {
   try {
+    // In development mode without API key, just log the email
+    if (import.meta.env.DEV && !import.meta.env.VITE_RESEND_API_KEY) {
+      console.log('📧 Email would be sent:', {
+        to: template.to,
+        subject: template.subject,
+        from: template.from || 'ODE Food Hall <noreply@odefoodhall.com>'
+      });
+      return { id: 'dev-email-id' };
+    }
+
     const { data, error } = await resend.emails.send({
       from: template.from || 'ODE Food Hall <noreply@odefoodhall.com>',
       to: template.to,

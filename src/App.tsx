@@ -43,7 +43,6 @@ import { SEOHead } from "@/components/SEO/SEOHead";
 
 
 import { ConversionTracker } from "@/components/analytics/ConversionTracker";
-import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
 
 import { ABTestProvider } from "@/components/ABTestProvider";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -81,6 +80,9 @@ import PaymentCancelled from "./pages/PaymentCancelled";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import AdminCheck from "./components/AdminCheck";
 import GamesAdmin from "./pages/GamesAdmin";
 import NotFound from "./pages/NotFound";
 import { PhotosPage } from "./pages/PhotosPage";
@@ -166,10 +168,11 @@ function App() {
                     onClose={closeDemoNotification} 
                   />
                   
-                  <div className="flex min-h-screen bg-background">
-                    <PortalNavigation />
-                    
-                    <main className="flex-1 overflow-auto">
+                  <AdminCheck>
+                    <div className="flex min-h-screen bg-background">
+                      <PortalNavigation />
+                      
+                      <main className="flex-1 overflow-auto">
                       <ConversionTracker>
                         <Routes>
                           {/* Home - accessible to all */}
@@ -417,12 +420,26 @@ function App() {
                             </SecureRoute>
                           } />
                           
+                          {/* Admin Dashboard Routes */}
+                          <Route path="/admin" element={
+                            <SecureRoute requiredRole="admin">
+                              <AdminDashboard />
+                            </SecureRoute>
+                          } />
+                          
+                          <Route path="/admin/users" element={
+                            <SecureRoute requiredRole="admin">
+                              <UserManagement />
+                            </SecureRoute>
+                          } />
+                          
                           {/* 404 fallback */}
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </ConversionTracker>
                     </main>
                   </div>
+                  </AdminCheck>
                   
                   <CrossSystemNotifications />
                   <DataSynchronization />
