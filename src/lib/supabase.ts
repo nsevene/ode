@@ -83,9 +83,52 @@ if (isDemo) {
               },
               error: null
             };
-          }
+          },
+          limit: (count: number) => ({
+            then: async (callback: any) => {
+              console.log(`Mock select from ${table} where ${column} = ${value} limit ${count}`);
+              return callback({
+                data: [{
+                  id: 'mock-id',
+                  email: 'admin@odefoodhall.com',
+                  full_name: 'System Administrator',
+                  role: 'admin',
+                  is_active: true,
+                  created_at: new Date().toISOString()
+                }],
+                error: null
+              });
+            }
+          })
         }),
         order: (column: string, options: any) => ({
+          limit: (count: number) => ({
+            then: async (callback: any) => {
+              console.log(`Mock select from ${table} order by ${column} limit ${count}`);
+              const mockUsers = [
+                {
+                  id: 'mock-admin-id',
+                  email: 'admin@odefoodhall.com',
+                  full_name: 'System Administrator',
+                  role: 'admin',
+                  is_active: true,
+                  created_at: new Date().toISOString()
+                },
+                {
+                  id: 'mock-user-id',
+                  email: 'user@example.com',
+                  full_name: 'John Doe',
+                  role: 'guest',
+                  is_active: true,
+                  created_at: new Date().toISOString()
+                }
+              ];
+              return callback({
+                data: mockUsers.slice(0, count),
+                error: null
+              });
+            }
+          }),
           then: async (callback: any) => {
             console.log(`Mock select from ${table} order by ${column}`);
             const mockUsers = [
@@ -111,7 +154,59 @@ if (isDemo) {
               error: null
             });
           }
-        })
+        }),
+        limit: (count: number) => ({
+          then: async (callback: any) => {
+            console.log(`Mock select from ${table} limit ${count}`);
+            const mockUsers = [
+              {
+                id: 'mock-admin-id',
+                email: 'admin@odefoodhall.com',
+                full_name: 'System Administrator',
+                role: 'admin',
+                is_active: true,
+                created_at: new Date().toISOString()
+              },
+              {
+                id: 'mock-user-id',
+                email: 'user@example.com',
+                full_name: 'John Doe',
+                role: 'guest',
+                is_active: true,
+                created_at: new Date().toISOString()
+              }
+            ];
+            return callback({
+              data: mockUsers.slice(0, count),
+              error: null
+            });
+          }
+        }),
+        then: async (callback: any) => {
+          console.log(`Mock select from ${table}`);
+          const mockUsers = [
+            {
+              id: 'mock-admin-id',
+              email: 'admin@odefoodhall.com',
+              full_name: 'System Administrator',
+              role: 'admin',
+              is_active: true,
+              created_at: new Date().toISOString()
+            },
+            {
+              id: 'mock-user-id',
+              email: 'user@example.com',
+              full_name: 'John Doe',
+              role: 'guest',
+              is_active: true,
+              created_at: new Date().toISOString()
+            }
+          ];
+          return callback({
+            data: mockUsers,
+            error: null
+          });
+        }
       }),
       insert: (data: any) => ({
         then: async (callback: any) => {
