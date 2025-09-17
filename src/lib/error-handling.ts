@@ -1,304 +1,366 @@
-import { toast } from 'sonner';
+import { ERROR_MESSAGES } from './constants';
 
 // Error types
 export enum ErrorType {
   NETWORK = 'NETWORK',
-  VALIDATION = 'VALIDATION',
-  AUTHENTICATION = 'AUTHENTICATION',
-  AUTHORIZATION = 'AUTHORIZATION',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
   NOT_FOUND = 'NOT_FOUND',
+  VALIDATION = 'VALIDATION',
   SERVER = 'SERVER',
-  UNKNOWN = 'UNKNOWN',
+  TIMEOUT = 'TIMEOUT',
+  UNKNOWN = 'UNKNOWN'
 }
 
-export interface AppError {
-  type: ErrorType;
-  message: string;
-  code?: string;
-  details?: any;
-  timestamp: Date;
-  userMessage?: string;
-}
-
-// Error class for application errors
-export class AppErrorClass extends Error {
+// Custom error class
+export class AppError extends Error {
   public readonly type: ErrorType;
   public readonly code?: string;
+  public readonly statusCode?: number;
   public readonly details?: any;
-  public readonly timestamp: Date;
-  public readonly userMessage?: string;
 
   constructor(
-    type: ErrorType,
     message: string,
+    type: ErrorType = ErrorType.UNKNOWN,
     code?: string,
-    details?: any,
-    userMessage?: string
+    statusCode?: number,
+    details?: any
   ) {
     super(message);
     this.name = 'AppError';
     this.type = type;
     this.code = code;
+    this.statusCode = statusCode;
     this.details = details;
-    this.timestamp = new Date();
-    this.userMessage = userMessage;
   }
 }
 
-// Error handler function
-export const handleError = (error: unknown): AppError => {
-  console.error('Error occurred:', error);
+// Error handler class
+export class ErrorHandler {
+  private static instance: ErrorHandler;
+  private errorLog: Array<{
+    timestamp: number;
+    error: AppError;
+    context?: string;
+    userAgent?: string;
+  }> = [];
 
-  // Supabase errors
-  if (error && typeof error === 'object' && 'message' in error) {
-    const supabaseError = error as any;
-    
-    if (supabaseError.code === 'PGRST116') {
-      return new AppErrorClass(
+  private constructor() {}
+
+  public static getInstance(): ErrorHandler {
+    if (!ErrorHandler.instance) {
+      ErrorHandler.instance = new ErrorHandler();
+    }
+    return ErrorHandler.instance;
+  }
+
+  // Handle different types of errors
+  public handleError(error: unknown, context?: string): AppError {
+    let appError: AppError;
+
+    if (error instanceof AppError) {
+      appError = error;
+    } else if (error instanceof Error) {
+      appError = this.parseError(error);
+    } else {
+      appError = new AppError(
+        'An unexpected error occurred',
+        ErrorType.UNKNOWN,
+        'UNKNOWN_ERROR'
+      );
+    }
+
+    // Log error
+    this.logError(appError, context);
+
+    return appError;
+  }
+
+  // Parse different error types
+  private parseError(error: Error): AppError {
+    const message = error.message.toLowerCase();
+
+    // Network errors
+    if (message.includes('network') || message.includes('fetch')) {
+      return new AppError(
+        ERROR_MESSAGES.NETWORK,
+        ErrorType.NETWORK,
+        'NETWORK_ERROR'
+      );
+    }
+
+    // Timeout errors
+    if (message.includes('timeout')) {
+      return new AppError(
+        ERROR_MESSAGES.TIMEOUT,
+        ErrorType.TIMEOUT,
+        'TIMEOUT_ERROR'
+      );
+    }
+
+    // Validation errors
+    if (message.includes('validation') || message.includes('invalid')) {
+      return new AppError(
+        ERROR_MESSAGES.VALIDATION,
+        ErrorType.VALIDATION,
+        'VALIDATION_ERROR'
+      );
+    }
+
+    // HTTP status code errors
+    if (message.includes('401') || message.includes('unauthorized')) {
+      return new AppError(
+        ERROR_MESSAGES.UNAUTHORIZED,
+        ErrorType.UNAUTHORIZED,
+        'UNAUTHORIZED_ERROR',
+        401
+      );
+    }
+
+    if (message.includes('403') || message.includes('forbidden')) {
+      return new AppError(
+        ERROR_MESSAGES.FORBIDDEN,
+        ErrorType.FORBIDDEN,
+        'FORBIDDEN_ERROR',
+        403
+      );
+    }
+
+    if (message.includes('404') || message.includes('not found')) {
+      return new AppError(
+        ERROR_MESSAGES.NOT_FOUND,
         ErrorType.NOT_FOUND,
-        'Resource not found',
-        'NOT_FOUND',
-        supabaseError,
-        'The requested item could not be found'
+        'NOT_FOUND_ERROR',
+        404
       );
     }
-    
-    if (supabaseError.code === '23505') {
-      return new AppErrorClass(
-        ErrorType.VALIDATION,
-        'Duplicate entry',
-        'DUPLICATE',
-        supabaseError,
-        'This item already exists'
+
+    if (message.includes('500') || message.includes('server')) {
+      return new AppError(
+        ERROR_MESSAGES.SERVER,
+        ErrorType.SERVER,
+        'SERVER_ERROR',
+        500
       );
     }
-    
-    if (supabaseError.code === '23503') {
-      return new AppErrorClass(
-        ErrorType.VALIDATION,
-        'Foreign key constraint violation',
-        'FOREIGN_KEY',
-        supabaseError,
-        'Cannot delete this item as it is referenced by other records'
-      );
+
+    // Default to unknown error
+    return new AppError(
+      ERROR_MESSAGES.UNKNOWN,
+      ErrorType.UNKNOWN,
+      'UNKNOWN_ERROR'
+    );
+  }
+
+  // Log error
+  private logError(error: AppError, context?: string): void {
+    const errorEntry = {
+      timestamp: Date.now(),
+      error,
+      context,
+      userAgent: navigator.userAgent
+    };
+
+    this.errorLog.push(errorEntry);
+
+    // Keep only last 100 errors
+    if (this.errorLog.length > 100) {
+      this.errorLog = this.errorLog.slice(-100);
+    }
+
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error logged:', errorEntry);
     }
   }
 
-  // Network errors
-  if (error instanceof TypeError && error.message.includes('fetch')) {
-    return new AppErrorClass(
+  // Get error logs
+  public getErrorLogs(): Array<{
+    timestamp: number;
+    error: AppError;
+    context?: string;
+    userAgent?: string;
+  }> {
+    return [...this.errorLog];
+  }
+
+  // Clear error logs
+  public clearErrorLogs(): void {
+    this.errorLog = [];
+  }
+
+  // Get user-friendly error message
+  public getUserFriendlyMessage(error: AppError): string {
+    switch (error.type) {
+      case ErrorType.NETWORK:
+        return 'Please check your internet connection and try again.';
+      case ErrorType.UNAUTHORIZED:
+        return 'Please log in to continue.';
+      case ErrorType.FORBIDDEN:
+        return 'You do not have permission to perform this action.';
+      case ErrorType.NOT_FOUND:
+        return 'The requested resource was not found.';
+      case ErrorType.VALIDATION:
+        return 'Please check your input and try again.';
+      case ErrorType.SERVER:
+        return 'Server error. Please try again later.';
+      case ErrorType.TIMEOUT:
+        return 'Request timed out. Please try again.';
+      default:
+        return 'An unexpected error occurred. Please try again.';
+    }
+  }
+
+  // Check if error is retryable
+  public isRetryable(error: AppError): boolean {
+    return [
       ErrorType.NETWORK,
-      'Network connection failed',
-      'NETWORK_ERROR',
-      error,
-      'Please check your internet connection and try again'
-    );
+      ErrorType.TIMEOUT,
+      ErrorType.SERVER
+    ].includes(error.type);
   }
 
-  // Validation errors
-  if (error && typeof error === 'object' && 'issues' in error) {
-    return new AppErrorClass(
-      ErrorType.VALIDATION,
-      'Validation failed',
-      'VALIDATION_ERROR',
-      error,
-      'Please check your input and try again'
-    );
+  // Get retry delay
+  public getRetryDelay(attempt: number): number {
+    // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+    return Math.min(1000 * Math.pow(2, attempt), 16000);
+  }
+}
+
+// Global error handler instance
+export const errorHandler = ErrorHandler.getInstance();
+
+// Error boundary props
+export interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: AppError; retry: () => void }>;
+  onError?: (error: AppError, errorInfo: any) => void;
+}
+
+// Error boundary state
+export interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: AppError;
+}
+
+// Retry mechanism
+export class RetryManager {
+  private static instance: RetryManager;
+  private retryQueues: Map<string, Array<() => Promise<any>>> = new Map();
+
+  private constructor() {}
+
+  public static getInstance(): RetryManager {
+    if (!RetryManager.instance) {
+      RetryManager.instance = new RetryManager();
+    }
+    return RetryManager.instance;
   }
 
-  // Authentication errors
-  if (error && typeof error === 'object' && 'status' in error && (error as any).status === 401) {
-    return new AppErrorClass(
-      ErrorType.AUTHENTICATION,
-      'Authentication failed',
-      'AUTH_ERROR',
-      error,
-      'Please log in again'
-    );
+  // Retry a function with exponential backoff
+  public async retry<T>(
+    fn: () => Promise<T>,
+    maxAttempts: number = 3,
+    context: string = 'default'
+  ): Promise<T> {
+    let lastError: AppError;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = errorHandler.handleError(error, context);
+        
+        if (!errorHandler.isRetryable(lastError) || attempt === maxAttempts - 1) {
+          throw lastError;
+        }
+
+        const delay = errorHandler.getRetryDelay(attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+
+    throw lastError!;
   }
 
-  // Authorization errors
-  if (error && typeof error === 'object' && 'status' in error && (error as any).status === 403) {
-    return new AppErrorClass(
-      ErrorType.AUTHORIZATION,
-      'Access denied',
-      'AUTHZ_ERROR',
-      error,
-      'You do not have permission to perform this action'
-    );
+  // Queue retry for later
+  public queueRetry(fn: () => Promise<any>, context: string = 'default'): void {
+    if (!this.retryQueues.has(context)) {
+      this.retryQueues.set(context, []);
+    }
+    this.retryQueues.get(context)!.push(fn);
   }
 
-  // Server errors
-  if (error && typeof error === 'object' && 'status' in error && (error as any).status >= 500) {
-    return new AppErrorClass(
-      ErrorType.SERVER,
-      'Server error',
-      'SERVER_ERROR',
-      error,
-      'Something went wrong on our end. Please try again later'
-    );
-  }
+  // Process retry queue
+  public async processRetryQueue(context: string = 'default'): Promise<void> {
+    const queue = this.retryQueues.get(context);
+    if (!queue || queue.length === 0) return;
 
-  // Default error
-  return new AppErrorClass(
-    ErrorType.UNKNOWN,
-    error instanceof Error ? error.message : 'An unknown error occurred',
-    'UNKNOWN_ERROR',
-    error,
-    'Something went wrong. Please try again'
-  );
+    const functions = [...queue];
+    this.retryQueues.set(context, []);
+
+    for (const fn of functions) {
+      try {
+        await this.retry(fn, 3, context);
+      } catch (error) {
+        console.error('Retry failed:', error);
+      }
+    }
+  }
+}
+
+// Global retry manager instance
+export const retryManager = RetryManager.getInstance();
+
+// Utility functions
+export const isAppError = (error: unknown): error is AppError => {
+  return error instanceof AppError;
 };
 
-// Error display function
-export const displayError = (error: AppError): void => {
-  const userMessage = error.userMessage || error.message;
-  
-  switch (error.type) {
-    case ErrorType.NETWORK:
-      toast.error(userMessage, {
-        description: 'Please check your internet connection',
-        duration: 5000,
-      });
-      break;
-      
-    case ErrorType.VALIDATION:
-      toast.error(userMessage, {
-        description: 'Please check your input',
-        duration: 4000,
-      });
-      break;
-      
-    case ErrorType.AUTHENTICATION:
-      toast.error(userMessage, {
-        description: 'Please log in again',
-        duration: 4000,
-      });
-      break;
-      
-    case ErrorType.AUTHORIZATION:
-      toast.error(userMessage, {
-        description: 'Contact support if you believe this is an error',
-        duration: 5000,
-      });
-      break;
-      
-    case ErrorType.NOT_FOUND:
-      toast.error(userMessage, {
-        description: 'The item may have been removed',
-        duration: 4000,
-      });
-      break;
-      
-    case ErrorType.SERVER:
-      toast.error(userMessage, {
-        description: 'We are working to fix this issue',
-        duration: 6000,
-      });
-      break;
-      
-    default:
-      toast.error(userMessage, {
-        description: 'Please try again or contact support',
-        duration: 5000,
-      });
+export const createError = (
+  message: string,
+  type: ErrorType = ErrorType.UNKNOWN,
+  code?: string,
+  statusCode?: number,
+  details?: any
+): AppError => {
+  return new AppError(message, type, code, statusCode, details);
+};
+
+export const handleAsyncError = async <T>(
+  fn: () => Promise<T>,
+  context?: string
+): Promise<T> => {
+  try {
+    return await fn();
+  } catch (error) {
+    throw errorHandler.handleError(error, context);
   }
 };
 
-// Error logging function
-export const logError = (error: AppError, context?: string): void => {
-  const logData = {
-    type: error.type,
-    message: error.message,
-    code: error.code,
-    details: error.details,
-    timestamp: error.timestamp,
-    context,
-    userAgent: navigator.userAgent,
-    url: window.location.href,
-  };
-
-  // Log to console in development
-  if (process.env.NODE_ENV === 'development') {
-    console.error('Error logged:', logData);
-  }
-
-  // In production, you would send this to your logging service
-  // Example: sendToLoggingService(logData);
-};
-
-// Error boundary error handler
-export const handleErrorBoundaryError = (error: Error, errorInfo: any): AppError => {
-  const appError = new AppErrorClass(
-    ErrorType.UNKNOWN,
-    error.message,
-    'BOUNDARY_ERROR',
-    { error, errorInfo },
-    'Something went wrong. Please refresh the page'
-  );
-
-  logError(appError, 'Error Boundary');
-  return appError;
-};
-
-// Async error handler wrapper
 export const withErrorHandling = <T extends any[], R>(
-  fn: (...args: T) => Promise<R>
+  fn: (...args: T) => Promise<R>,
+  context?: string
 ) => {
   return async (...args: T): Promise<R> => {
     try {
       return await fn(...args);
     } catch (error) {
-      const appError = handleError(error);
-      logError(appError);
-      displayError(appError);
-      throw appError;
+      throw errorHandler.handleError(error, context);
     }
   };
 };
 
-// Error recovery strategies
-export const getErrorRecoveryStrategy = (error: AppError): (() => void) | null => {
-  switch (error.type) {
-    case ErrorType.NETWORK:
-      return () => {
-        // Retry the operation
-        window.location.reload();
-      };
-      
-    case ErrorType.AUTHENTICATION:
-      return () => {
-        // Redirect to login
-        window.location.href = '/auth';
-      };
-      
-    case ErrorType.NOT_FOUND:
-      return () => {
-        // Redirect to home
-        window.location.href = '/';
-      };
-      
-    default:
-      return null;
+// Display error function for UI
+export const displayError = (error: AppError | Error | unknown): void => {
+  const appError = error instanceof AppError ? error : errorHandler.handleError(error);
+  
+  // Log error to console in development
+  if (process.env.NODE_ENV === 'development') {
+    console.error('Error displayed:', appError);
   }
-};
-
-// Error monitoring hook
-export const useErrorMonitoring = () => {
-  const reportError = (error: AppError, context?: string) => {
-    logError(error, context);
-    
-    // In production, you would send this to your error monitoring service
-    // Example: Sentry.captureException(error);
-  };
-
-  const handleAsyncError = (error: unknown, context?: string) => {
-    const appError = handleError(error);
-    reportError(appError, context);
-    displayError(appError);
-  };
-
-  return {
-    reportError,
-    handleAsyncError,
-  };
+  
+  // You can add toast notifications or other UI error display here
+  // For now, we'll just log to console
+  console.error(`[${appError.type}] ${appError.message}`, appError.details);
 };

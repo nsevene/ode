@@ -10,9 +10,17 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import ChunkRecovery from "@/components/error/ChunkRecovery";
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 import DemoModeNotification from "@/components/DemoModeNotification";
-import PortalNavigation from "@/components/layout/PortalNavigation";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { CONFIG } from "@/lib/config";
+
+// Navigation components
+import MainNavigation from "@/components/navigation/MainNavigation";
+import Breadcrumbs from "@/components/navigation/Breadcrumbs";
+import LoadingStates from "@/components/navigation/LoadingStates";
+import UserFlows from "@/components/flows/UserFlows";
+
+// Context providers
+import { AppProvider } from "@/contexts/AppContext";
 
 // Lazy loaded pages
 import { LazyPages } from "@/pages/LazyPages";
@@ -27,7 +35,7 @@ import { SkipToMainContent, SkipToNavigation } from "@/components/SkipLink";
 import { NotificationProvider } from "@/components/NotificationSystem";
 
 // Performance monitoring
-import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import { SimplePerformanceMonitor } from "@/components/performance/SimplePerformanceMonitor";
 
 // Mobile navigation
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -55,9 +63,6 @@ import Events from "./pages/Events";
 import Menu from "./pages/Menu";
 import TasteCompass from "./pages/TasteCompass";
 import TasteQuest from "./pages/TasteQuest";
-import Demo from "./pages/Demo";
-import DemoGuest from "./pages/demo/DemoGuest";
-import DemoPartners from "./pages/demo/DemoPartners";
 import Experiences from "./pages/Experiences";
 import About from "./pages/About";
 import DeliveryMenu from "./pages/DeliveryMenu";
@@ -84,12 +89,7 @@ import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import PromoteToAdmin from "./pages/admin/PromoteToAdmin";
-import ForceUpdateRole from "./pages/admin/ForceUpdateRole";
-import CreateTestAdmin from "./pages/admin/CreateTestAdmin";
-import DebugAdmin from "./pages/admin/DebugAdmin";
-import AdminCredentials from "./pages/admin/AdminCredentials";
-import QuickAdmin from "./pages/QuickAdmin";
-import FindExistingAdmin from "./pages/FindExistingAdmin";
+import SetupAdminAccount from "./pages/admin/SetupAdminAccount";
 import AdminCheck from "./components/AdminCheck";
 import GamesAdmin from "./pages/GamesAdmin";
 import NotFound from "./pages/NotFound";
@@ -151,6 +151,7 @@ import InvestorsPortal from "./pages/investors/InvestorsPortal";
 import InvestorsIntroCall from "./pages/investors/InvestorsIntroCall";
 import MarketingPortal from "./pages/marketing/MarketingPortal";
 import DigitalEcosystemPortal from "./pages/digital-ecosystem/DigitalEcosystemPortal";
+import UserFlowDemo from "./pages/UserFlowDemo";
 import "./lib/i18n";
 
 const queryClient = new QueryClient();
@@ -166,25 +167,31 @@ function App() {
             <ErrorBoundary>
               <ChunkRecovery />
               <AuthProvider>
-                <ABTestProvider>
-                  <Toaster />
-                  <Sonner />
-                  
-                  {/* Demo Mode Notification */}
-                  <DemoModeNotification 
-                    show={showDemoNotification} 
-                    onClose={closeDemoNotification} 
-                  />
-                  
-                  <AdminCheck>
-                    <div className="flex min-h-screen bg-background">
-                      <PortalNavigation />
-                      
-                      <main className="flex-1 overflow-auto">
-                      <ConversionTracker>
-                        <Routes>
+                <AppProvider>
+                  <ABTestProvider>
+                    <Toaster />
+                    <Sonner />
+                    
+                    {/* Demo Mode Notification */}
+                    <DemoModeNotification 
+                      show={showDemoNotification} 
+                      onClose={closeDemoNotification} 
+                    />
+                    
+                    <LoadingStates>
+                      <UserFlows>
+                        <div className="min-h-screen bg-gray-50">
+                          <MainNavigation />
+                          <Breadcrumbs />
+                          
+                          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                            <ConversionTracker>
+                              <Routes>
                           {/* Home - accessible to all */}
                           <Route path="/" element={<Index />} />
+                          
+                          {/* User Flow Demo */}
+                          <Route path="/demo-flows" element={<UserFlowDemo />} />
                           
                           {/* Guest Demo Redirects - 301 redirects */}
                           <Route path="/order" element={<Navigate to="/guest-demo" replace />} />
@@ -319,50 +326,6 @@ function App() {
                             </RoleProtectedRoute>
                           } />
                           
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/demo/guest" element={<DemoGuest />} />
-          <Route path="/demo/partners" element={<DemoPartners />} />
-                          <Route path="/guest-demo/*" element={
-                            <RoleProtectedRoute requiredPath="/guest-demo">
-                              <div className="p-8">
-                                <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 mb-6">
-                                  <div className="flex items-center gap-2 text-warning mb-2">
-                                    <span className="font-semibold">🚀 DEMO MODE</span>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">
-                                    This is a preview of the guest experience. All actions are simulated.
-                                  </p>
-                                </div>
-                                <h1 className="text-3xl font-bold mb-4">Guest Demo Portal</h1>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                  <div className="p-6 border rounded-lg">
-                                    <h3 className="font-semibold mb-2">Unified Menu</h3>
-                                    <p className="text-sm text-muted-foreground">Browse all vendor menus in one place</p>
-                                  </div>
-                                  <div className="p-6 border rounded-lg">
-                                    <h3 className="font-semibold mb-2">Order Flow</h3>
-                                    <p className="text-sm text-muted-foreground">Complete ordering experience</p>
-                                  </div>
-                                  <div className="p-6 border rounded-lg">
-                                    <h3 className="font-semibold mb-2">Payments</h3>
-                                    <p className="text-sm text-muted-foreground">Secure payment processing</p>
-                                  </div>
-                                  <div className="p-6 border rounded-lg">
-                                    <h3 className="font-semibold mb-2">Taste Passport</h3>
-                                    <p className="text-sm text-muted-foreground">Gamified dining experience</p>
-                                  </div>
-                                  <div className="p-6 border rounded-lg">
-                                    <h3 className="font-semibold mb-2">Taste Compass</h3>
-                                    <p className="text-sm text-muted-foreground">Flavor discovery journey</p>
-                                  </div>
-                                  <div className="p-6 border rounded-lg">
-                                    <h3 className="font-semibold mb-2">Mobile App</h3>
-                                    <p className="text-sm text-muted-foreground">PWA and native features</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </RoleProtectedRoute>
-                          } />
                           
           {/* Data Room - investor, internal */}
           <Route path="/data-room" element={
@@ -445,52 +408,34 @@ function App() {
                             <PromoteToAdmin />
                           } />
                           
-                          <Route path="/admin/force-update" element={
-                            <ForceUpdateRole />
-                          } />
-                          
-                          <Route path="/admin/create-test" element={
-                            <CreateTestAdmin />
-                          } />
-                          
-                          <Route path="/admin/debug" element={
-                            <DebugAdmin />
-                          } />
-                          
-                          <Route path="/admin/credentials" element={
-                            <AdminCredentials />
-                          } />
-                          
-                          <Route path="/quick-admin" element={
-                            <QuickAdmin />
-                          } />
-                          
-                          <Route path="/find-admin" element={
-                            <FindExistingAdmin />
+                          <Route path="/admin/setup" element={
+                            <SetupAdminAccount />
                           } />
                           
                           {/* 404 fallback */}
                           <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </ConversionTracker>
-                    </main>
-                  </div>
-                  </AdminCheck>
-                  
-                  <CrossSystemNotifications />
-                  <DataSynchronization />
-                  <PerformanceMonitor />
-                  <PushNotifications />
-                  <OfflineMode />
-                  <SupportChat />
-                  <SecurityLogger />
-                </ABTestProvider>
-              </AuthProvider>
-            </ErrorBoundary>
-          </TooltipProvider>
-        </BrowserRouter>
-      </HelmetProvider>
-    </QueryClientProvider>
+                              </Routes>
+                            </ConversionTracker>
+                          </main>
+                        </div>
+                      </UserFlows>
+                    </LoadingStates>
+                
+                <CrossSystemNotifications />
+                <DataSynchronization />
+                <SimplePerformanceMonitor />
+                <PushNotifications />
+                <OfflineMode />
+                <SupportChat />
+                <SecurityLogger />
+              </ABTestProvider>
+            </AppProvider>
+          </AuthProvider>
+        </ErrorBoundary>
+      </TooltipProvider>
+    </BrowserRouter>
+  </HelmetProvider>
+</QueryClientProvider>
   );
 }
 

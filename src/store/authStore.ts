@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { handleError, displayError } from '@/lib/error-handling';
+import { supabase } from '@/integrations/supabase/client';
+import { errorHandler, displayError } from '@/lib/error-handling';
 
 interface AuthState {
   user: User | null;
@@ -65,7 +65,7 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           if (error) {
-            const appError = handleError(error);
+            const appError = errorHandler.handleError(error);
             displayError(appError);
             return { success: false, error: appError.message };
           }
@@ -82,7 +82,7 @@ export const useAuthStore = create<AuthStore>()(
 
           return { success: true };
         } catch (error) {
-          const appError = handleError(error);
+          const appError = errorHandler.handleError(error);
           displayError(appError);
           set({ loading: false });
           return { success: false, error: appError.message };
@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthStore>()(
           });
 
           if (error) {
-            const appError = handleError(error);
+            const appError = errorHandler.handleError(error);
             displayError(appError);
             return { success: false, error: appError.message };
           }
@@ -113,7 +113,7 @@ export const useAuthStore = create<AuthStore>()(
 
           return { success: true };
         } catch (error) {
-          const appError = handleError(error);
+          const appError = errorHandler.handleError(error);
           displayError(appError);
           set({ loading: false });
           return { success: false, error: appError.message };
@@ -127,7 +127,7 @@ export const useAuthStore = create<AuthStore>()(
           const { error } = await supabase.auth.signOut();
           
           if (error) {
-            const appError = handleError(error);
+            const appError = errorHandler.handleError(error);
             displayError(appError);
             return;
           }
@@ -141,7 +141,7 @@ export const useAuthStore = create<AuthStore>()(
             permissions: [],
           });
         } catch (error) {
-          const appError = handleError(error);
+          const appError = errorHandler.handleError(error);
           displayError(appError);
           set({ loading: false });
         }
@@ -172,7 +172,7 @@ export const useAuthStore = create<AuthStore>()(
           if (!user) return;
 
           const { data, error } = await supabase
-            .from('profiles')
+            .from('user_roles')
             .select('role')
             .eq('user_id', user.id)
             .single();

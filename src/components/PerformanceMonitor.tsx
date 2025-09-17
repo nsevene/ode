@@ -41,15 +41,16 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   const updateMetrics = useCallback(() => {
     const performanceInfo = performance as any;
     
-    // Memory usage
+    // Memory usage - fix calculation
     const memoryUsage = performanceInfo.memory ? 
-      Math.round((performanceInfo.memory.usedJSHeapSize / performanceInfo.memory.totalJSHeapSize) * 100) : 0;
+      Math.min(100, Math.round((performanceInfo.memory.usedJSHeapSize / performanceInfo.memory.totalJSHeapSize) * 100)) : 0;
     
-    // Load time
-    const loadTime = Math.round(performance.now());
+    // Load time - fix calculation to show actual page load time
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const loadTime = navigation ? Math.round(navigation.loadEventEnd - navigation.loadEventStart) : 0;
     
-    // Render time (simplified)
-    const renderTime = Math.round(performance.now() - performance.timeOrigin);
+    // Render time - fix calculation to show actual render time
+    const renderTime = Math.max(0, Math.round(performance.now() - (performance.timeOrigin || 0)));
     
     setMetrics(prev => ({
       ...prev,
@@ -314,12 +315,22 @@ export const usePerformanceMetrics = () => {
   const updateMetrics = useCallback(() => {
     const performanceInfo = performance as any;
     
+    // Memory usage - fix calculation
+    const memoryUsage = performanceInfo.memory ? 
+      Math.min(100, Math.round((performanceInfo.memory.usedJSHeapSize / performanceInfo.memory.totalJSHeapSize) * 100)) : 0;
+    
+    // Load time - fix calculation to show actual page load time
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const loadTime = navigation ? Math.round(navigation.loadEventEnd - navigation.loadEventStart) : 0;
+    
+    // Render time - fix calculation to show actual render time
+    const renderTime = Math.max(0, Math.round(performance.now() - (performance.timeOrigin || 0)));
+    
     setMetrics(prev => ({
       ...prev,
-      memoryUsage: performanceInfo.memory ? 
-        Math.round((performanceInfo.memory.usedJSHeapSize / performanceInfo.memory.totalJSHeapSize) * 100) : 0,
-      loadTime: Math.round(performance.now()),
-      renderTime: Math.round(performance.now() - performance.timeOrigin),
+      memoryUsage,
+      loadTime,
+      renderTime,
       networkStatus: navigator.onLine ? 'online' : 'offline',
     }));
   }, []);

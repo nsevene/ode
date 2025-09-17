@@ -1,46 +1,60 @@
-import '@testing-library/jest-dom';
-import { expect, afterEach } from 'vitest';
+import { beforeAll, afterAll, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import * as matchers from '@testing-library/jest-dom/matchers';
+import { server } from './mocks/server';
 
-// Extend Vitest's expect with jest-dom matchers
-expect.extend(matchers);
+// Setup MSW server
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'error' });
+});
 
 // Cleanup after each test
 afterEach(() => {
   cleanup();
+  server.resetHandlers();
 });
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-};
+// Cleanup after all tests
+afterAll(() => {
+  server.close();
+});
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-};
+// Mock environment variables
+Object.defineProperty(import.meta, 'env', {
+  value: {
+    VITE_SUPABASE_URL: 'https://test.supabase.co',
+    VITE_SUPABASE_ANON_KEY: 'test-anon-key',
+    NODE_ENV: 'test'
+  }
+});
 
-// Mock matchMedia
+// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
 });
+
+// Mock IntersectionObserver
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
 
 // Mock localStorage
 const localStorageMock = {
@@ -49,7 +63,9 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-global.localStorage = localStorageMock;
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock
+});
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -58,4 +74,23 @@ const sessionStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-global.sessionStorage = sessionStorageMock;
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock
+});
+
+// Mock fetch
+global.fetch = vi.fn();
+
+// Mock console methods in test environment
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+beforeAll(() => {
+  console.error = vi.fn();
+  console.warn = vi.fn();
+});
+
+afterAll(() => {
+  console.error = originalConsoleError;
+  console.warn = originalConsoleWarn;
+});

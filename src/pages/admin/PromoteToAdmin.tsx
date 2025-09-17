@@ -18,14 +18,10 @@ export default function PromoteToAdmin() {
     setResult(null);
 
     try {
-      // Проверяем, существует ли пользователь
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', email)
-        .single();
+      // Проверяем, существует ли пользователь в auth.users
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(email);
 
-      if (userError || !userData) {
+      if (userError || !userData?.user) {
         setResult({
           success: false,
           message: 'Пользователь с таким email не найден в системе. Проверьте email и попробуйте снова.'
@@ -34,27 +30,67 @@ export default function PromoteToAdmin() {
         return;
       }
 
-      // Обновляем роль пользователя на admin
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          role: 'admin',
-          is_active: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('email', email);
+      const userId = userData.user.id;
 
-      if (updateError) {
+      // Проверяем, есть ли уже роль у пользователя
+      const { data: existingRole, error: roleCheckError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      if (roleCheckError && roleCheckError.code !== 'PGRST116') {
         setResult({
           success: false,
-          message: `Ошибка при обновлении роли: ${updateError.message}`
+          message: `Ошибка при проверке роли: ${roleCheckError.message}`
         });
+        setLoading(false);
+        return;
+      }
+
+      // Если роль уже существует, обновляем её, иначе создаём новую
+      if (existingRole) {
+        const { error: updateError } = await supabase
+          .from('user_roles')
+          .update({ 
+            role: 'admin',
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+
+        if (updateError) {
+          setResult({
+            success: false,
+            message: `Ошибка при обновлении роли: ${updateError.message}`
+          });
+        } else {
+          setResult({
+            success: true,
+            message: `Пользователь ${email} успешно назначен администратором! Теперь он может войти в систему с правами администратора.`
+          });
+          setEmail(''); // Очищаем поле
+        }
       } else {
-        setResult({
-          success: true,
-          message: `Пользователь ${email} успешно назначен администратором! Теперь он может войти в систему с правами администратора.`
-        });
-        setEmail(''); // Очищаем поле
+        // Создаём новую роль
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: 'admin'
+          });
+
+        if (insertError) {
+          setResult({
+            success: false,
+            message: `Ошибка при создании роли: ${insertError.message}`
+          });
+        } else {
+          setResult({
+            success: true,
+            message: `Пользователь ${email} успешно назначен администратором! Теперь он может войти в систему с правами администратора.`
+          });
+          setEmail(''); // Очищаем поле
+        }
       }
     } catch (error) {
       console.error('Error promoting user to admin:', error);
@@ -94,7 +130,7 @@ export default function PromoteToAdmin() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="just0aguest@gmail.com"
+                  placeholder="admin@odefoodhall.com"
                   required
                   className="w-full"
                 />
@@ -128,7 +164,7 @@ export default function PromoteToAdmin() {
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
               <h3 className="text-sm font-medium text-blue-900 mb-2">Инструкции:</h3>
               <ol className="text-xs text-blue-800 space-y-1">
-                <li>1. Введите email пользователя: <strong>just0aguest@gmail.com</strong></li>
+                <li>1. Введите email пользователя для назначения администратором</li>
                 <li>2. Нажмите "Назначить Администратором"</li>
                 <li>3. Пользователь получит права администратора</li>
                 <li>4. Теперь он может войти в систему как админ</li>
