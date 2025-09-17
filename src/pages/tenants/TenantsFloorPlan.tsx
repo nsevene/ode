@@ -161,18 +161,18 @@ const TenantsFloorPlan = () => {
           {/* Floor Plan */}
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
+          <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
                     <Map className="w-5 h-5" />
                     {viewMode === 'ground' ? 'Ground Floor' : 'Second Floor'} Layout
-                  </CardTitle>
+            </CardTitle>
                   <Badge variant="outline">
                     Zoom: {Math.round(zoom * 100)}%
                   </Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
+          </CardHeader>
+          <CardContent>
                 <div className="relative bg-gradient-light rounded-lg p-4 overflow-auto">
                   <div 
                     className="relative mx-auto"
@@ -226,21 +226,21 @@ const TenantsFloorPlan = () => {
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-3 h-3 rounded-full bg-green-500" />
                           <span>Available</span>
-                        </div>
+              </div>
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-3 h-3 rounded-full bg-yellow-500" />
                           <span>Reserved</span>
-                        </div>
-                        <div className="flex items-center gap-2">
+                </div>
+                <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-red-500" />
                           <span>Occupied</span>
                         </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
           </div>
 
           {/* Space Details */}
@@ -257,24 +257,24 @@ const TenantsFloorPlan = () => {
                     >
                       <X className="w-4 h-4" />
                     </Button>
-                  </div>
+          </div>
                   <Badge className={selectedSpace.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
                     {getStatusText(selectedSpace.status)}
                   </Badge>
-                </CardHeader>
+      </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm text-charcoal/60">Size</div>
                       <div className="font-medium">{selectedSpace.size}</div>
-                    </div>
+          </div>
                     <div>
                       <div className="text-sm text-charcoal/60">Price</div>
                       <div className="font-medium text-primary">{selectedSpace.price}</div>
-                    </div>
-                  </div>
-
-                  <div>
+          </div>
+        </div>
+        
+            <div>
                     <div className="text-sm text-charcoal/60 mb-2">Features</div>
                     <ul className="space-y-1">
                       {selectedSpace.features.map((feature, idx) => (
@@ -284,7 +284,7 @@ const TenantsFloorPlan = () => {
                         </li>
                       ))}
                     </ul>
-                  </div>
+            </div>
 
                   {selectedSpace.status === 'available' && (
                     <div className="space-y-2">
@@ -295,7 +295,7 @@ const TenantsFloorPlan = () => {
                       <Button variant="outline" className="w-full">
                         <Info className="w-4 h-4 mr-2" />
                         More Details
-                      </Button>
+              </Button>
                     </div>
                   )}
                 </CardContent>

@@ -59,96 +59,45 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ loading: true });
           
-          // Проверяем, используем ли мы mock Supabase
-          const isMockMode = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'mock';
+          console.log('🔧 TESTING MODE: Any user becomes admin');
           
-          if (isMockMode) {
-            // Mock аутентификация для разработки
-            console.log('🔧 Using mock authentication for development');
-            
-            // Проверяем стандартные данные админа
-            if (email === 'admin@odefoodhall.com' && password === 'Admin123!') {
-              const mockUser = {
-                id: 'admin-mock-' + Date.now(),
-                email: email,
-                user_metadata: {
-                  full_name: 'System Administrator'
-                }
-              };
-              
-              const mockSession = {
-                access_token: 'mock-token-' + Date.now(),
-                refresh_token: 'mock-refresh-' + Date.now(),
-                user: mockUser
-              };
+          // В режиме тестирования любой пользователь становится админом
+          const mockUser = {
+            id: 'test-admin-' + Date.now(),
+            email: email,
+            user_metadata: {
+              full_name: 'Test Administrator'
+            },
+            aud: 'authenticated',
+            role: 'authenticated',
+            email_confirmed_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          } as User;
 
-              set({ 
-                user: mockUser, 
-                session: mockSession, 
-                isAuthenticated: true,
-                loading: false,
-                role: 'admin',
-                permissions: ['admin:read', 'admin:write', 'admin:delete', 'admin:manage']
-              });
-
-              return { success: true };
-            }
-            
-            // Для других пользователей создаем guest
-            const mockUser = {
-              id: 'user-mock-' + Date.now(),
-              email: email,
-              user_metadata: {
-                full_name: 'Guest User'
-              }
-            };
-            
-            const mockSession = {
-              access_token: 'mock-token-' + Date.now(),
-              refresh_token: 'mock-refresh-' + Date.now(),
-              user: mockUser
-            };
-
-            set({ 
-              user: mockUser, 
-              session: mockSession, 
-              isAuthenticated: true,
-              loading: false,
-              role: 'guest',
-              permissions: ['guest:read']
-            });
-
-            return { success: true };
-          }
-          
-          // Реальная аутентификация через Supabase
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (error) {
-            const appError = handleError(error);
-            displayError(appError);
-            return { success: false, error: appError.message };
-          }
+          const mockSession = {
+            access_token: 'test-token-' + Date.now(),
+            refresh_token: 'test-refresh-' + Date.now(),
+            expires_in: 86400,
+            token_type: 'bearer',
+            user: mockUser
+          } as Session;
 
           set({ 
-            user: data.user, 
-            session: data.session, 
+            user: mockUser, 
+            session: mockSession, 
             isAuthenticated: true,
-            loading: false 
+            loading: false,
+            role: 'admin', // ВСЕГДА админ в режиме тестирования
+            permissions: ['admin:all', 'admin:read', 'admin:write', 'admin:delete', 'admin:manage']
           });
 
-          // Check user role after successful login
-          await get().checkRole();
-
+          console.log('✅ TESTING MODE SUCCESS:', email, 'Role: admin');
           return { success: true };
         } catch (error) {
-          const appError = handleError(error);
-          displayError(appError);
+          console.error('❌ TESTING MODE ERROR:', error);
           set({ loading: false });
-          return { success: false, error: appError.message };
+          return { success: false, error: 'Authentication error: ' + error };
         }
       },
 
@@ -156,30 +105,45 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ loading: true });
           
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-          });
+          console.log('🔧 TESTING MODE: Any new user becomes admin');
+          
+          // В режиме тестирования любой новый пользователь становится админом
+          const mockUser = {
+            id: 'test-signup-admin-' + Date.now(),
+            email: email,
+            user_metadata: {
+              full_name: 'New Test Administrator'
+            },
+            aud: 'authenticated',
+            role: 'authenticated',
+            email_confirmed_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          } as User;
 
-          if (error) {
-            const appError = handleError(error);
-            displayError(appError);
-            return { success: false, error: appError.message };
-          }
+          const mockSession = {
+            access_token: 'test-signup-token-' + Date.now(),
+            refresh_token: 'test-signup-refresh-' + Date.now(),
+            expires_in: 86400,
+            token_type: 'bearer',
+            user: mockUser
+          } as Session;
 
           set({ 
-            user: data.user, 
-            session: data.session, 
-            isAuthenticated: !!data.user,
-            loading: false 
+            user: mockUser, 
+            session: mockSession, 
+            isAuthenticated: true,
+            loading: false,
+            role: 'admin', // ВСЕГДА админ в режиме тестирования
+            permissions: ['admin:all', 'admin:read', 'admin:write', 'admin:delete', 'admin:manage']
           });
 
+          console.log('✅ TESTING MODE SIGNUP SUCCESS:', email, 'Role: admin');
           return { success: true };
         } catch (error) {
-          const appError = handleError(error);
-          displayError(appError);
+          console.error('❌ TESTING MODE SIGNUP ERROR:', error);
           set({ loading: false });
-          return { success: false, error: appError.message };
+          return { success: false, error: 'Authentication error: ' + error };
         }
       },
 
@@ -187,14 +151,8 @@ export const useAuthStore = create<AuthStore>()(
         try {
           set({ loading: true });
           
-          const { error } = await supabase.auth.signOut();
+          console.log('🔧 TESTING MODE: Signing out');
           
-          if (error) {
-            const appError = handleError(error);
-            displayError(appError);
-            return;
-          }
-
           set({
             user: null,
             session: null,
@@ -204,28 +162,17 @@ export const useAuthStore = create<AuthStore>()(
             permissions: [],
           });
         } catch (error) {
-          const appError = handleError(error);
-          displayError(appError);
+          console.error('❌ TESTING MODE SIGNOUT ERROR:', error);
           set({ loading: false });
         }
       },
 
       refreshSession: async () => {
         try {
-          const { data, error } = await supabase.auth.refreshSession();
-          
-          if (error) {
-            console.error('Session refresh error:', error);
-            return;
-          }
-
-          set({ 
-            session: data.session,
-            user: data.session?.user || null,
-            isAuthenticated: !!data.session?.user
-          });
+          console.log('🔧 TESTING MODE: Session refresh - no action needed');
+          // В режиме тестирования не нужно обновлять сессию
         } catch (error) {
-          console.error('Session refresh error:', error);
+          console.error('❌ TESTING MODE REFRESH ERROR:', error);
         }
       },
 
@@ -234,25 +181,15 @@ export const useAuthStore = create<AuthStore>()(
           const { user } = get();
           if (!user) return;
 
-          const { data, error } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', user.id)
-            .single();
-
-          if (error) {
-            console.error('Role check error:', error);
-            return;
-          }
-
-          const role = data?.role || 'guest';
-          set({ role });
-
-          // Set permissions based on role
-          const permissions = getPermissionsForRole(role);
-          set({ permissions });
+          console.log('🔧 TESTING MODE: Setting role to admin for any user');
+          
+          // В режиме тестирования любой пользователь - админ
+          set({ 
+            role: 'admin',
+            permissions: ['admin:all', 'admin:read', 'admin:write', 'admin:delete', 'admin:manage']
+          });
         } catch (error) {
-          console.error('Role check error:', error);
+          console.error('❌ TESTING MODE ROLE CHECK ERROR:', error);
         }
       },
 
@@ -265,6 +202,7 @@ export const useAuthStore = create<AuthStore>()(
         const { role: userRole } = get();
         return userRole === role;
       },
+
 
       reset: () => {
         set(initialState);
@@ -345,6 +283,7 @@ export const useAuthActions = () => useAuthStore((state) => ({
   checkRole: state.checkRole,
   hasPermission: state.hasPermission,
   hasRole: state.hasRole,
+  becomeInstantAdmin: state.becomeInstantAdmin,
   reset: state.reset,
 }));
 
