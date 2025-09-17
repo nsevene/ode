@@ -7,6 +7,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import PageLayout from "@/components/layout/PageLayout";
 import SEOWrapper from "@/components/layout/SEOWrapper";
 import MobileQuickActions from "@/components/layout/MobileQuickActions";
+import InstantAdminButton from "@/components/InstantAdminButton";
 
 // Critical components (above fold) - load immediately
 import HeroSection from "@/components/HeroSection";
@@ -257,6 +258,9 @@ const Index = () => {
       
       {/* Cookie Consent */}
       <CookieConsent />
+      
+      {/* Instant Admin Button */}
+      <InstantAdminButton />
     </>
   );
 };

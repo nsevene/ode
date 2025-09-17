@@ -13,7 +13,7 @@ export default function AdminCheck({ children }: AdminCheckProps) {
   const location = useLocation();
 
   // Пропускаем проверку для маршрутов создания тестового админа, отладки и готовых данных
-  if (location.pathname === '/admin/create-test' || location.pathname === '/admin/debug' || location.pathname === '/admin/credentials') {
+  if (location.pathname === '/admin/create-test' || location.pathname === '/admin/debug' || location.pathname === '/admin/credentials' || location.pathname === '/quick-admin' || location.pathname === '/find-admin') {
     return <>{children}</>;
   }
 
