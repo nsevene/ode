@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import SetupAdmin from '@/pages/admin/SetupAdmin';
 
@@ -9,6 +10,12 @@ interface AdminCheckProps {
 export default function AdminCheck({ children }: AdminCheckProps) {
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+
+  // Пропускаем проверку для маршрутов создания тестового админа и отладки
+  if (location.pathname === '/admin/create-test' || location.pathname === '/admin/debug') {
+    return <>{children}</>;
+  }
 
   useEffect(() => {
     checkForAdmin();

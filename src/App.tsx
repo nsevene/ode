@@ -83,6 +83,9 @@ import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import PromoteToAdmin from "./pages/admin/PromoteToAdmin";
+import ForceUpdateRole from "./pages/admin/ForceUpdateRole";
+import CreateTestAdmin from "./pages/admin/CreateTestAdmin";
+import DebugAdmin from "./pages/admin/DebugAdmin";
 import AdminCheck from "./components/AdminCheck";
 import GamesAdmin from "./pages/GamesAdmin";
 import NotFound from "./pages/NotFound";
@@ -436,6 +439,18 @@ function App() {
                           
                           <Route path="/admin/promote" element={
                             <PromoteToAdmin />
+                          } />
+                          
+                          <Route path="/admin/force-update" element={
+                            <ForceUpdateRole />
+                          } />
+                          
+                          <Route path="/admin/create-test" element={
+                            <CreateTestAdmin />
+                          } />
+                          
+                          <Route path="/admin/debug" element={
+                            <DebugAdmin />
                           } />
                           
                           {/* 404 fallback */}

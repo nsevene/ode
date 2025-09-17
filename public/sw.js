@@ -1,8 +1,11 @@
-// Service Worker for PWA functionality
-const CACHE_NAME = 'ode-food-hall-v4';
-const STATIC_CACHE = 'ode-static-v4';
-const IMAGE_CACHE = 'ode-images-v4';
-const ASSETS_CACHE = 'ode-assets-v4';
+// Service Worker for PWA functionality - DISABLED FOR DEVELOPMENT
+const CACHE_NAME = 'ode-food-hall-v5';
+const STATIC_CACHE = 'ode-static-v5';
+const IMAGE_CACHE = 'ode-images-v5';
+const ASSETS_CACHE = 'ode-assets-v5';
+
+// DISABLE CACHING IN DEVELOPMENT
+const isDevelopment = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
 
 // Core assets to cache immediately
 const urlsToCache = [
@@ -32,6 +35,11 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   
+  // DISABLE CACHING IN DEVELOPMENT
+  if (isDevelopment) {
+    return; // Let browser handle all requests normally
+  }
+  
   // Skip third-party requests (e.g., Google Maps, analytics) to avoid caching issues
   if (requestUrl.origin !== self.location.origin) {
     return;
@@ -40,7 +48,7 @@ self.addEventListener('fetch', (event) => {
   // Handle static assets (JS, CSS) with cache-first strategy for long-term caching
   if (requestUrl.pathname.includes('/assets/') || 
       requestUrl.pathname.endsWith('.js') || 
-      requestUrl.pathname.endsWith('.css') ||
+      (requestUrl.pathname.endsWith('.css') && !requestUrl.pathname.includes('src/index.css')) ||
       requestUrl.pathname.includes('lovable-uploads/')) {
     event.respondWith(
       caches.open(ASSETS_CACHE)
