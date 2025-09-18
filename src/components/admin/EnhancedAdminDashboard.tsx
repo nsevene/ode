@@ -58,6 +58,8 @@ const EventsManagement = lazy(() => import("@/components/admin/EventsManagement"
 const NotificationSystem = lazy(() => import("@/components/admin/NotificationSystem"));
 const ExportData = lazy(() => import("@/components/admin/ExportData"));
 const VendorManagement = lazy(() => import("@/components/admin/VendorManagement"));
+const MenuManagement = lazy(() => import("@/components/admin/MenuManagement"));
+const ApplicationsManagement = lazy(() => import("@/components/admin/ApplicationsManagement"));
 const SpaceBookingManagement = lazy(() => import("@/components/admin/SpaceBookingManagement"));
 const TenantAnalytics = lazy(() => import("@/components/admin/TenantAnalytics"));
 const ContractsModule = lazy(() => import("@/components/admin/ContractsModule"));
@@ -116,7 +118,7 @@ interface QuickAction {
 }
 
 export default function EnhancedAdminDashboard() {
-  const { getAnalyticsData } = useAnalytics();
+  const { trackPageView } = useAnalytics();
   const [realTimeEvents, setRealTimeEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -271,11 +273,13 @@ export default function EnhancedAdminDashboard() {
       </div>
 
       <Tabs defaultValue="analytics" className="space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-4' : 'grid-cols-10'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-4' : 'grid-cols-12'}`}>
           <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+          <TabsTrigger value="vendors">Вендоры</TabsTrigger>
+          <TabsTrigger value="menu">Меню</TabsTrigger>
           <TabsTrigger value="events">События</TabsTrigger>
-          <TabsTrigger value="vendors">Арендаторы</TabsTrigger>
-          <TabsTrigger value="tenant-applications">Заявки арендаторов</TabsTrigger>
+          <TabsTrigger value="applications">Заявки</TabsTrigger>
+          <TabsTrigger value="tenant-applications">Арендаторы</TabsTrigger>
           <TabsTrigger value="contracts">Контракты</TabsTrigger>
           <TabsTrigger value="documents">Документы</TabsTrigger>
           <TabsTrigger value="users">Пользователи</TabsTrigger>
@@ -470,6 +474,18 @@ export default function EnhancedAdminDashboard() {
         <TabsContent value="vendors">
           <Suspense fallback={<div className="flex items-center justify-center h-64">Загрузка...</div>}>
             <VendorManagement />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="menu">
+          <Suspense fallback={<div className="flex items-center justify-center h-64">Загрузка...</div>}>
+            <MenuManagement />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="applications">
+          <Suspense fallback={<div className="flex items-center justify-center h-64">Загрузка...</div>}>
+            <ApplicationsManagement />
           </Suspense>
         </TabsContent>
 

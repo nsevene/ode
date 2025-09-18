@@ -11,13 +11,16 @@ import ChunkRecovery from "@/components/error/ChunkRecovery";
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 import DemoModeNotification from "@/components/DemoModeNotification";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { useRoles } from "@/hooks/useRoles";
 import { CONFIG } from "@/lib/config";
 
 // Navigation components
-import MainNavigation from "@/components/navigation/MainNavigation";
 import Breadcrumbs from "@/components/navigation/Breadcrumbs";
 import LoadingStates from "@/components/navigation/LoadingStates";
 import UserFlows from "@/components/flows/UserFlows";
+
+// Cart components
+import ShoppingCart from "@/components/cart/ShoppingCart";
 
 // Context providers
 import { AppProvider } from "@/contexts/AppContext";
@@ -62,6 +65,7 @@ import Index from "./pages/Index";
 import Events from "./pages/Events";
 import Menu from "./pages/Menu";
 import TasteCompass from "./pages/TasteCompass";
+import TasteCompassEnhanced from "./pages/TasteCompassEnhanced";
 import TasteQuest from "./pages/TasteQuest";
 import Experiences from "./pages/Experiences";
 import About from "./pages/About";
@@ -78,15 +82,13 @@ import VirtualTour from "./pages/VirtualTour";
 
 import WineStaircase from "./pages/WineStaircase";
 import VendorsHello from "./pages/VendorsHello";
-import ChefsTable from "./pages/ChefsTable";
 import MyBookings from "./pages/MyBookings";
 import BookingDetail from "./pages/BookingDetail";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancelled from "./pages/PaymentCancelled";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Admin from "./pages/Admin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import EnhancedAdminDashboard from "./components/admin/EnhancedAdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import PromoteToAdmin from "./pages/admin/PromoteToAdmin";
 import SetupAdminAccount from "./pages/admin/SetupAdminAccount";
@@ -152,12 +154,33 @@ import InvestorsIntroCall from "./pages/investors/InvestorsIntroCall";
 import MarketingPortal from "./pages/marketing/MarketingPortal";
 import DigitalEcosystemPortal from "./pages/digital-ecosystem/DigitalEcosystemPortal";
 import UserFlowDemo from "./pages/UserFlowDemo";
+import { GuestDemo } from "./pages/guest-demo";
+import VendorsPage from "./pages/VendorsPage";
+import VendorDetailPage from "./pages/VendorDetailPage";
+import EventDetailPage from "./pages/EventDetailPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ProfileLayout from "./pages/profile/ProfileLayout";
+import ProfileDetailsPage from "./pages/profile/ProfileDetailsPage";
+import OrderHistoryPage from "./pages/profile/OrderHistoryPage";
+import BookingHistoryPage from "./pages/profile/BookingHistoryPage";
+import FavoritesPage from "./pages/profile/FavoritesPage";
+import AddressesPage from "./pages/profile/AddressesPage";
+import PaymentMethodsPage from "./pages/profile/PaymentMethodsPage";
+import NotificationsPage from "./pages/profile/NotificationsPage";
+
+// New pages
+import Philosophy from "./pages/Philosophy";
+import Breakfast from "./pages/Breakfast";
+import Delivery from "./pages/Delivery";
+import Vendors from "./pages/Vendors";
+import ChefsTable from "./pages/ChefsTable";
 import "./lib/i18n";
 
 const queryClient = new QueryClient();
 
-function App() {
+function AppContent() {
   const { showDemoNotification, closeDemoNotification } = useDemoMode();
+  const { userRole } = useRoles();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -166,7 +189,6 @@ function App() {
           <TooltipProvider>
             <ErrorBoundary>
               <ChunkRecovery />
-              <AuthProvider>
                 <AppProvider>
                   <ABTestProvider>
                     <Toaster />
@@ -181,9 +203,6 @@ function App() {
                     <LoadingStates>
                       <UserFlows>
                         <div className="min-h-screen bg-gray-50">
-                          <MainNavigation />
-                          <Breadcrumbs />
-                          
                           <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                             <ConversionTracker>
                               <Routes>
@@ -192,6 +211,9 @@ function App() {
                           
                           {/* User Flow Demo */}
                           <Route path="/demo-flows" element={<UserFlowDemo />} />
+                          
+                          {/* Guest Demo - Main Demo Page */}
+                          <Route path="/guest-demo" element={<GuestDemo />} />
                           
                           {/* Guest Demo Redirects - 301 redirects */}
                           <Route path="/order" element={<Navigate to="/guest-demo" replace />} />
@@ -206,9 +228,38 @@ function App() {
                           <Route path="/passport" element={<Navigate to="/guest-demo" replace />} />
                           <Route path="/compass" element={<Navigate to="/guest-demo" replace />} />
                           <Route path="/taste-passport" element={<Navigate to="/guest-demo" replace />} />
-                          <Route path="/taste-compass" element={<Navigate to="/guest-demo" replace />} />
+                          <Route path="/taste-compass" element={<TasteCompassEnhanced />} />
                           <Route path="/ode-by-night" element={<Navigate to="/guest-demo" replace />} />
-                          <Route path="/events" element={<Navigate to="/guest-demo" replace />} />
+                          <Route path="/events" element={<Events />} />
+                          <Route path="/events/:id" element={<EventDetailPage />} />
+                          
+                          {/* Philosophy */}
+                          <Route path="/philosophy" element={<Philosophy />} />
+                          
+                          {/* Vendors */}
+                          <Route path="/vendors" element={<VendorsPage />} />
+                          <Route path="/vendors/:id" element={<VendorDetailPage />} />
+                          
+                          {/* Additional Pages */}
+                          <Route path="/breakfast" element={<Breakfast />} />
+                          <Route path="/delivery" element={<Delivery />} />
+                          <Route path="/become-vendor" element={<Vendors />} />
+                          <Route path="/chefs-table" element={<ChefsTable />} />
+                          
+                          {/* Checkout */}
+                          <Route path="/checkout" element={<CheckoutPage />} />
+                          
+                          {/* Profile */}
+            <Route path="/profile" element={<ProfileLayout />}>
+              <Route index element={<ProfileDetailsPage />} />
+              <Route path="details" element={<ProfileDetailsPage />} />
+              <Route path="orders" element={<OrderHistoryPage />} />
+              <Route path="bookings" element={<BookingHistoryPage />} />
+              <Route path="favorites" element={<FavoritesPage />} />
+              <Route path="addresses" element={<AddressesPage />} />
+              <Route path="payments" element={<PaymentMethodsPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+            </Route>
                           
           {/* Storytelling - accessible to all */}
           <Route path="/storytelling" element={
@@ -343,11 +394,6 @@ function App() {
                           <Route path="/auth" element={<Auth />} />
                           
                           {/* Protected Admin Routes */}
-                          <Route path="/admin/*" element={
-                            <SecureRoute requiredRole="admin">
-                              <Admin />
-                            </SecureRoute>
-                          } />
                           
                           <Route path="/admin/chefs-table" element={
                             <SecureRoute requiredRole="admin">
@@ -394,7 +440,7 @@ function App() {
                           {/* Admin Dashboard Routes */}
                           <Route path="/admin" element={
                             <SecureRoute requiredRole="admin">
-                              <AdminDashboard />
+                              <EnhancedAdminDashboard />
                             </SecureRoute>
                           } />
                           
@@ -421,21 +467,35 @@ function App() {
                       </UserFlows>
                     </LoadingStates>
                 
-                <CrossSystemNotifications />
-                <DataSynchronization />
-                <SimplePerformanceMonitor />
-                <PushNotifications />
-                <OfflineMode />
-                <SupportChat />
-                <SecurityLogger />
+                <ShoppingCart />
+                
+                {/* Admin-only components */}
+                {userRole === 'admin' && (
+                  <>
+                    <CrossSystemNotifications />
+                    <DataSynchronization />
+                    <SimplePerformanceMonitor />
+                    <PushNotifications />
+                    <OfflineMode />
+                    <SupportChat />
+                    <SecurityLogger />
+                  </>
+                )}
               </ABTestProvider>
             </AppProvider>
-          </AuthProvider>
         </ErrorBoundary>
       </TooltipProvider>
     </BrowserRouter>
   </HelmetProvider>
 </QueryClientProvider>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

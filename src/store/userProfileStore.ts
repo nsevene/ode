@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
 
 export interface UserProfile {
   id: string;
@@ -98,7 +97,7 @@ interface UserProfileState {
 
 export const useUserProfileStore = create<UserProfileState>()(
   persist(
-    immer((set, get) => ({
+    (set, get) => ({
       // Initial State
       profile: null,
       loading: false,
@@ -107,9 +106,9 @@ export const useUserProfileStore = create<UserProfileState>()(
 
       // Actions
       fetchProfile: async (userId: string) => {
-        set((state) => {
-          state.loading = true;
-          state.error = null;
+        set({
+          loading: true,
+          error: null
         });
 
         try {
@@ -121,15 +120,15 @@ export const useUserProfileStore = create<UserProfileState>()(
           
           const profile = await response.json();
           
-          set((state) => {
-            state.profile = profile;
-            state.loading = false;
-            state.isInitialized = true;
+          set({
+            profile: profile,
+            loading: false,
+            isInitialized: true
           });
         } catch (error) {
-          set((state) => {
-            state.error = error instanceof Error ? error.message : 'Unknown error';
-            state.loading = false;
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error',
+            loading: false
           });
         }
       },
@@ -137,15 +136,15 @@ export const useUserProfileStore = create<UserProfileState>()(
       updateProfile: async (updates: Partial<UserProfile>) => {
         const { profile } = get();
         if (!profile) {
-          set((state) => {
-            state.error = 'No profile to update';
+          set({
+            error: 'No profile to update'
           });
           return;
         }
 
-        set((state) => {
-          state.loading = true;
-          state.error = null;
+        set({
+          loading: true,
+          error: null
         });
 
         try {
@@ -164,45 +163,43 @@ export const useUserProfileStore = create<UserProfileState>()(
 
           const updatedProfile = await response.json();
           
-          set((state) => {
-            if (state.profile) {
-              state.profile = { ...state.profile, ...updatedProfile, updatedAt: new Date().toISOString() };
-            }
-            state.loading = false;
+          set({
+            profile: { ...profile, ...updatedProfile, updatedAt: new Date().toISOString() },
+            loading: false
           });
         } catch (error) {
-          set((state) => {
-            state.error = error instanceof Error ? error.message : 'Unknown error';
-            state.loading = false;
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error',
+            loading: false
           });
         }
       },
 
       setProfile: (profile: UserProfile) => {
-        set((state) => {
-          state.profile = profile;
-          state.isInitialized = true;
-          state.error = null;
+        set({
+          profile: profile,
+          isInitialized: true,
+          error: null
         });
       },
 
       clearProfile: () => {
-        set((state) => {
-          state.profile = null;
-          state.isInitialized = false;
-          state.error = null;
+        set({
+          profile: null,
+          isInitialized: false,
+          error: null
         });
       },
 
       setLoading: (loading: boolean) => {
-        set((state) => {
-          state.loading = loading;
+        set({
+          loading: loading
         });
       },
 
       setError: (error: string | null) => {
-        set((state) => {
-          state.error = error;
+        set({
+          error: error
         });
       },
 

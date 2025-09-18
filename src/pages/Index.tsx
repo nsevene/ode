@@ -132,7 +132,6 @@ const Index = () => {
       <CacheOptimization />
       <PreloadResources />
       <SEOWrapper />
-      <PerformanceMonitor />
       
       <PageLayout 
         showMobileActions={false}

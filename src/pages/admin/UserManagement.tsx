@@ -38,7 +38,7 @@ import {
   Mail,
   Phone
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface User {
   id: string;

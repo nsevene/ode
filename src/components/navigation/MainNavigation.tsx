@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRoles } from '@/hooks/useRoles';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import CartIcon from '@/components/cart/CartIcon';
 
 interface NavigationItem {
   id: string;
@@ -331,6 +332,9 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({ className }) => 
                       {item.label}
                     </Link>
                   ))}
+
+                {/* Cart Icon */}
+                <CartIcon variant="icon" showCount={true} />
 
                 {/* User Dropdown */}
                 <div className="relative">

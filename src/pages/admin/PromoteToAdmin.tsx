@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, UserCheck } from 'lucide-react';
-import { supabase, adminFunctions } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PromoteToAdmin() {
   const [email, setEmail] = useState('');

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
 
 export interface CartItem {
   id: string;
@@ -67,7 +66,7 @@ interface CartState {
 
 export const useCartStore = create<CartState>()(
   persist(
-    immer((set, get) => ({
+    (set, get) => ({
       // Initial State
       items: [],
       isOpen: false,
@@ -76,64 +75,76 @@ export const useCartStore = create<CartState>()(
 
       // Actions
       addItem: (item) => {
-        set((state) => {
-          const existingItem = state.items.find(cartItem => cartItem.id === item.id);
-          
-          if (existingItem) {
-            // If item already exists, increment quantity
-            existingItem.quantity += 1;
-          } else {
-            // Add new item with quantity 1
-            state.items.push({ ...item, quantity: 1 });
-          }
-          
-          state.error = null;
-        });
+        const state = get();
+        const existingItem = state.items.find(cartItem => cartItem.id === item.id);
+        
+        if (existingItem) {
+          // If item already exists, increment quantity
+          set({
+            items: state.items.map(cartItem => 
+              cartItem.id === item.id 
+                ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                : cartItem
+            ),
+            error: null
+          });
+        } else {
+          // Add new item with quantity 1
+          set({
+            items: [...state.items, { ...item, quantity: 1 }],
+            error: null
+          });
+        }
       },
 
       removeItem: (itemId) => {
-        set((state) => {
-          state.items = state.items.filter(item => item.id !== itemId);
-          state.error = null;
+        const state = get();
+        set({
+          items: state.items.filter(item => item.id !== itemId),
+          error: null
         });
       },
 
       updateQuantity: (itemId, quantity) => {
-        set((state) => {
-          if (quantity <= 0) {
-            state.items = state.items.filter(item => item.id !== itemId);
-          } else {
-            const item = state.items.find(item => item.id === itemId);
-            if (item) {
-              item.quantity = quantity;
-            }
-          }
-          state.error = null;
-        });
+        const state = get();
+        if (quantity <= 0) {
+          set({
+            items: state.items.filter(item => item.id !== itemId),
+            error: null
+          });
+        } else {
+          set({
+            items: state.items.map(item => 
+              item.id === itemId ? { ...item, quantity } : item
+            ),
+            error: null
+          });
+        }
       },
 
       clearCart: () => {
-        set((state) => {
-          state.items = [];
-          state.error = null;
+        set({
+          items: [],
+          error: null
         });
       },
 
       toggleCart: () => {
-        set((state) => {
-          state.isOpen = !state.isOpen;
+        const state = get();
+        set({
+          isOpen: !state.isOpen
         });
       },
 
       openCart: () => {
-        set((state) => {
-          state.isOpen = true;
+        set({
+          isOpen: true
         });
       },
 
       closeCart: () => {
-        set((state) => {
-          state.isOpen = false;
+        set({
+          isOpen: false
         });
       },
 
@@ -166,25 +177,37 @@ export const useCartStore = create<CartState>()(
 
       // Cart Operations
       incrementItem: (itemId) => {
-        set((state) => {
-          const item = state.items.find(item => item.id === itemId);
-          if (item) {
-            item.quantity += 1;
-          }
-        });
+        const state = get();
+        const item = state.items.find(item => item.id === itemId);
+        if (item) {
+          set({
+            items: state.items.map(cartItem => 
+              cartItem.id === itemId 
+                ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                : cartItem
+            )
+          });
+        }
       },
 
       decrementItem: (itemId) => {
-        set((state) => {
-          const item = state.items.find(item => item.id === itemId);
-          if (item) {
-            if (item.quantity > 1) {
-              item.quantity -= 1;
-            } else {
-              state.items = state.items.filter(item => item.id !== itemId);
-            }
+        const state = get();
+        const item = state.items.find(item => item.id === itemId);
+        if (item) {
+          if (item.quantity > 1) {
+            set({
+              items: state.items.map(cartItem => 
+                cartItem.id === itemId 
+                  ? { ...cartItem, quantity: cartItem.quantity - 1 }
+                  : cartItem
+              )
+            });
+          } else {
+            set({
+              items: state.items.filter(cartItem => cartItem.id !== itemId)
+            });
           }
-        });
+        }
       },
 
       setItemQuantity: (itemId, quantity) => {
@@ -239,8 +262,8 @@ export const useCartStore = create<CartState>()(
           const savedCart = localStorage.getItem('ode-cart');
           if (savedCart) {
             const items = JSON.parse(savedCart);
-            set((state) => {
-              state.items = items;
+            set({
+              items: items
             });
           }
         } catch (error) {
@@ -291,13 +314,13 @@ export const useCartStore = create<CartState>()(
           kitchenBreakdown
         };
       }
-    })),
+    }),
     {
       name: 'ode-cart-storage',
       partialize: (state) => ({ items: state.items }),
     }
   )
-);
+)
 
 // Cart Store Hooks for specific use cases
 export const useCartItems = () => useCartStore(state => state.items);

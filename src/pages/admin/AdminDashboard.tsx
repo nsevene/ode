@@ -18,7 +18,7 @@ import {
   PieChart,
   Activity
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import UserManagement from './UserManagement';
 
 interface DashboardStats {

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { immer } from 'zustand/middleware/immer';
 
 export interface BookingData {
   id?: string;
@@ -73,7 +72,7 @@ interface BookingState {
 
 export const useBookingStore = create<BookingState>()(
   persist(
-    immer((set, get) => ({
+    (set, get) => ({
       // Initial State
       currentBooking: null,
       bookings: [],
@@ -83,76 +82,82 @@ export const useBookingStore = create<BookingState>()(
 
       // Actions
       setCurrentBooking: (booking: BookingData | null) => {
-        set((state) => {
-          state.currentBooking = booking;
-          state.error = null;
+        set({
+          currentBooking: booking,
+          error: null
         });
       },
 
       updateCurrentBooking: (updates: Partial<BookingData>) => {
-        set((state) => {
-          if (state.currentBooking) {
-            state.currentBooking = { ...state.currentBooking, ...updates };
-          }
-          state.error = null;
-        });
+        const state = get();
+        if (state.currentBooking) {
+          set({
+            currentBooking: { ...state.currentBooking, ...updates },
+            error: null
+          });
+        }
       },
 
       clearCurrentBooking: () => {
-        set((state) => {
-          state.currentBooking = null;
-          state.error = null;
+        set({
+          currentBooking: null,
+          error: null
         });
       },
 
       setBookings: (bookings: BookingData[]) => {
-        set((state) => {
-          state.bookings = bookings;
-          state.error = null;
+        set({
+          bookings: bookings,
+          error: null
         });
       },
 
       addBooking: (booking: BookingData) => {
-        set((state) => {
-          state.bookings.push(booking);
-          state.error = null;
+        const state = get();
+        set({
+          bookings: [...state.bookings, booking],
+          error: null
         });
       },
 
       updateBooking: (bookingId: string, updates: Partial<BookingData>) => {
-        set((state) => {
-          const index = state.bookings.findIndex(booking => booking.id === bookingId);
-          if (index !== -1) {
-            state.bookings[index] = { ...state.bookings[index], ...updates };
-          }
-          state.error = null;
-        });
+        const state = get();
+        const index = state.bookings.findIndex(booking => booking.id === bookingId);
+        if (index !== -1) {
+          set({
+            bookings: state.bookings.map((booking, i) => 
+              i === index ? { ...booking, ...updates } : booking
+            ),
+            error: null
+          });
+        }
       },
 
       removeBooking: (bookingId: string) => {
-        set((state) => {
-          state.bookings = state.bookings.filter(booking => booking.id !== bookingId);
-          state.error = null;
+        const state = get();
+        set({
+          bookings: state.bookings.filter(booking => booking.id !== bookingId),
+          error: null
         });
       },
 
       setLoading: (loading: boolean) => {
-        set((state) => {
-          state.loading = loading;
+        set({
+          loading: loading
         });
       },
 
       setError: (error: string | null) => {
-        set((state) => {
-          state.error = error;
+        set({
+          error: error
         });
       },
 
       // Booking Operations
       createBooking: async (bookingData: BookingData) => {
-        set((state) => {
-          state.loading = true;
-          state.error = null;
+        set({
+          loading: true,
+          error: null
         });
 
         try {
@@ -170,24 +175,25 @@ export const useBookingStore = create<BookingState>()(
           }
 
           const createdBooking = await response.json();
+          const state = get();
           
-          set((state) => {
-            state.bookings.push(createdBooking);
-            state.currentBooking = createdBooking;
-            state.loading = false;
+          set({
+            bookings: [...state.bookings, createdBooking],
+            currentBooking: createdBooking,
+            loading: false
           });
         } catch (error) {
-          set((state) => {
-            state.error = error instanceof Error ? error.message : 'Unknown error';
-            state.loading = false;
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error',
+            loading: false
           });
         }
       },
 
       confirmBooking: async (bookingId: string) => {
-        set((state) => {
-          state.loading = true;
-          state.error = null;
+        set({
+          loading: true,
+          error: null
         });
 
         try {
@@ -203,28 +209,31 @@ export const useBookingStore = create<BookingState>()(
             throw new Error('Failed to confirm booking');
           }
 
-          set((state) => {
-            const index = state.bookings.findIndex(booking => booking.id === bookingId);
-            if (index !== -1) {
-              state.bookings[index].status = 'confirmed';
-            }
-            if (state.currentBooking?.id === bookingId) {
-              state.currentBooking.status = 'confirmed';
-            }
-            state.loading = false;
+          const state = get();
+          const updatedBookings = state.bookings.map(booking => 
+            booking.id === bookingId ? { ...booking, status: 'confirmed' as const } : booking
+          );
+          const updatedCurrentBooking = state.currentBooking?.id === bookingId 
+            ? { ...state.currentBooking, status: 'confirmed' as const }
+            : state.currentBooking;
+
+          set({
+            bookings: updatedBookings,
+            currentBooking: updatedCurrentBooking,
+            loading: false
           });
         } catch (error) {
-          set((state) => {
-            state.error = error instanceof Error ? error.message : 'Unknown error';
-            state.loading = false;
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error',
+            loading: false
           });
         }
       },
 
       cancelBooking: async (bookingId: string) => {
-        set((state) => {
-          state.loading = true;
-          state.error = null;
+        set({
+          loading: true,
+          error: null
         });
 
         try {
@@ -240,28 +249,31 @@ export const useBookingStore = create<BookingState>()(
             throw new Error('Failed to cancel booking');
           }
 
-          set((state) => {
-            const index = state.bookings.findIndex(booking => booking.id === bookingId);
-            if (index !== -1) {
-              state.bookings[index].status = 'cancelled';
-            }
-            if (state.currentBooking?.id === bookingId) {
-              state.currentBooking.status = 'cancelled';
-            }
-            state.loading = false;
+          const state = get();
+          const updatedBookings = state.bookings.map(booking => 
+            booking.id === bookingId ? { ...booking, status: 'cancelled' as const } : booking
+          );
+          const updatedCurrentBooking = state.currentBooking?.id === bookingId 
+            ? { ...state.currentBooking, status: 'cancelled' as const }
+            : state.currentBooking;
+
+          set({
+            bookings: updatedBookings,
+            currentBooking: updatedCurrentBooking,
+            loading: false
           });
         } catch (error) {
-          set((state) => {
-            state.error = error instanceof Error ? error.message : 'Unknown error';
-            state.loading = false;
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error',
+            loading: false
           });
         }
       },
 
       completeBooking: async (bookingId: string) => {
-        set((state) => {
-          state.loading = true;
-          state.error = null;
+        set({
+          loading: true,
+          error: null
         });
 
         try {
@@ -277,20 +289,23 @@ export const useBookingStore = create<BookingState>()(
             throw new Error('Failed to complete booking');
           }
 
-          set((state) => {
-            const index = state.bookings.findIndex(booking => booking.id === bookingId);
-            if (index !== -1) {
-              state.bookings[index].status = 'completed';
-            }
-            if (state.currentBooking?.id === bookingId) {
-              state.currentBooking.status = 'completed';
-            }
-            state.loading = false;
+          const state = get();
+          const updatedBookings = state.bookings.map(booking => 
+            booking.id === bookingId ? { ...booking, status: 'completed' as const } : booking
+          );
+          const updatedCurrentBooking = state.currentBooking?.id === bookingId 
+            ? { ...state.currentBooking, status: 'completed' as const }
+            : state.currentBooking;
+
+          set({
+            bookings: updatedBookings,
+            currentBooking: updatedCurrentBooking,
+            loading: false
           });
         } catch (error) {
-          set((state) => {
-            state.error = error instanceof Error ? error.message : 'Unknown error';
-            state.loading = false;
+          set({
+            error: error instanceof Error ? error.message : 'Unknown error',
+            loading: false
           });
         }
       },
@@ -430,20 +445,21 @@ export const useBookingStore = create<BookingState>()(
 
       // Modal Operations
       openBookingModal: () => {
-        set((state) => {
-          state.isBookingModalOpen = true;
+        set({
+          isBookingModalOpen: true
         });
       },
 
       closeBookingModal: () => {
-        set((state) => {
-          state.isBookingModalOpen = false;
+        set({
+          isBookingModalOpen: false
         });
       },
 
       toggleBookingModal: () => {
-        set((state) => {
-          state.isBookingModalOpen = !state.isBookingModalOpen;
+        const state = get();
+        set({
+          isBookingModalOpen: !state.isBookingModalOpen
         });
       },
     })),

@@ -157,11 +157,11 @@ const ImprovedNavigation = () => {
       description: 'Доставка блюд'
     },
     { 
-      href: '/vendors', 
-      label: 'Vendors', 
+      href: '/become-vendor', 
+      label: 'Become Vendor', 
       icon: Store, 
       category: 'secondary',
-      description: 'Become Vendor - аренда корнеров'
+      description: 'Аренда корнеров и партнерство'
     },
     { 
       href: '/chefs-table', 

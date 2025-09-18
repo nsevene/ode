@@ -112,19 +112,45 @@ export const tenantApplicationSchema = z.object({
 });
 
 // Event validation schemas
+export const vendorSchema = z.object({
+  name: z.string().min(2, "Название вендора должно быть длиннее 2 символов"),
+  description: z.string().optional(),
+  cuisine_type: z.string().min(1, "Необходимо выбрать тип кухни"),
+  location: z.string().min(3, "Необходимо указать местоположение"),
+  phone: z.string().regex(/^\+?[0-9\s\-()]{7,20}$/, "Некорректный формат телефона"),
+  email: z.string().email("Некорректный формат email"),
+  website: z.string().url("Некорректный URL веб-сайта").optional().or(z.literal('')),
+  is_active: z.boolean().default(true),
+});
+
+export const menuItemSchema = z.object({
+  name: z.string().min(2, "Название блюда должно быть длиннее 2 символов"),
+  description: z.string().optional(),
+  price: z.coerce.number().min(0.01, "Цена должна быть положительной"),
+  category: z.string().min(1, "Необходимо выбрать категорию"),
+  vendor_id: z.string().uuid("Некорректный ID вендора"),
+  is_available: z.boolean().default(true),
+  preparation_time: z.coerce.number().int().min(1, "Время приготовления должно быть положительным числом"),
+  spice_level: z.enum(['mild', 'medium', 'hot', 'extra-hot']).default('mild'),
+  is_vegetarian: z.boolean().default(false),
+  is_vegan: z.boolean().default(false),
+  is_gluten_free: z.boolean().default(false),
+  allergens: z.array(z.string()).optional(),
+});
+
 export const eventSchema = z.object({
-  id: z.string().uuid().optional(),
-  title: z.string().min(1, 'Event title is required'),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  date: z.string().datetime(),
-  duration: z.number().min(1).max(24),
-  location: z.string().min(1, 'Location is required'),
-  capacity: z.number().min(1).max(1000),
-  price: z.number().min(0),
-  category: z.string().min(1, 'Category is required'),
-  status: z.enum(['draft', 'published', 'cancelled', 'completed']).optional(),
-  created_at: z.string().datetime().optional(),
-  updated_at: z.string().datetime().optional(),
+  title: z.string().min(5, "Название должно быть длиннее 5 символов"),
+  description: z.string().optional(),
+  event_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Некорректный формат даты"),
+  start_time: z.string().regex(/^\d{2}:\d{2}$/, "Некорректный формат времени"),
+  end_time: z.string().regex(/^\d{2}:\d{2}$/, "Некорректный формат времени"),
+  location: z.string().min(3, "Необходимо указать место проведения"),
+  max_attendees: z.coerce.number().int().positive("Количество участников должно быть положительным числом"),
+  price: z.coerce.number().min(0, "Цена не может быть отрицательной"),
+  event_type: z.string().min(1, "Необходимо выбрать тип события"),
+  is_featured: z.boolean().default(false),
+  is_active: z.boolean().default(true),
+  image_url: z.string().url("Некорректный URL изображения").optional().or(z.literal('')),
 });
 
 // Form validation helpers

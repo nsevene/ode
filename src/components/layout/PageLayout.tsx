@@ -26,8 +26,6 @@ const PageLayout = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pure-white via-cream-light to-cream-medium/30">
-      <OfflineIndicator />
-      <MobilePWABanner />
       
       {/* Unified Navigation */}
       <UnifiedNavigation variant={variant} />
@@ -38,6 +36,7 @@ const PageLayout = ({
         role="main" 
         className={cn(
           isMobile ? 'pb-20 pt-16' : 'pt-16',
+          variant === 'portal' ? 'ml-64' : '',
           'relative',
           className
         )}

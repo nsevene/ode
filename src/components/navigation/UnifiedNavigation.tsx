@@ -140,11 +140,11 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
       description: 'Доставка блюд'
     },
     { 
-      href: '/vendors', 
-      label: 'Vendors', 
+      href: '/become-vendor', 
+      label: 'Become Vendor', 
       icon: Store, 
       category: 'secondary',
-      description: 'Become Vendor - аренда корнеров'
+      description: 'Аренда корнеров и партнерство'
     },
     { 
       href: '/chefs-table', 
@@ -343,7 +343,7 @@ export const UnifiedNavigation: React.FC<UnifiedNavigationProps> = ({
   // Portal Navigation variant
   if (variant === 'portal') {
     return (
-      <nav className={cn("bg-card border-r border-border", className)}>
+      <nav className={cn("bg-card border-r border-border fixed left-0 top-0 h-full w-64 z-50", className)}>
         <div className="p-6">
           <Link to="/" className="flex items-center gap-3 mb-8">
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg"></div>

@@ -342,3 +342,68 @@ export const useApiClient = () => {
     handleApiResponse,
   };
 };
+
+// ====================================================================
+// Specific API clients for different parts of the application
+// ====================================================================
+import type { Vendor, MenuItem, Event, Booking, Document, TenantApplication } from '@/types/database';
+
+/**
+ * Vendor API Client
+ */
+export const vendorApi = {
+  getAll: async () => supabase.from('vendors').select('*'),
+  getById: async (id: string) => supabase.from('vendors').select('*').eq('id', id).single(),
+  create: async (vendorData: Partial<Vendor>) => 
+    supabase.from('vendors').insert(vendorData).select().single(),
+  update: async (id: string, updates: Partial<Vendor>) => 
+    supabase.from('vendors').update(updates).eq('id', id).select().single(),
+  delete: async (id: string) => supabase.from('vendors').delete().eq('id', id),
+};
+
+/**
+ * Menu Item API Client
+ */
+export const menuApi = {
+  getByVendor: async (vendorId: string) => 
+    supabase.from('menu_items').select('*').eq('vendor_id', vendorId),
+  create: async (itemData: Partial<MenuItem>) => 
+    supabase.from('menu_items').insert(itemData).select().single(),
+  update: async (id: string, updates: Partial<MenuItem>) => 
+    supabase.from('menu_items').update(updates).eq('id', id).select().single(),
+  delete: async (id: string) => supabase.from('menu_items').delete().eq('id', id),
+};
+
+/**
+ * Event API Client
+ */
+export const eventApi = {
+  getAll: async () => supabase.from('events').select('*').order('event_date'),
+  getById: async (id: string) => supabase.from('events').select('*').eq('id', id).single(),
+  create: async (eventData: Partial<Event>) => 
+    supabase.from('events').insert(eventData).select().single(),
+  update: async (id: string, updates: Partial<Event>) => 
+    supabase.from('events').update(updates).eq('id', id).select().single(),
+  delete: async (id: string) => supabase.from('events').delete().eq('id', id),
+};
+
+/**
+ * Booking API Client
+ */
+export const bookingApi = {
+  getUserBookings: async (userId: string) => 
+    supabase.from('bookings').select('*, events(*)').eq('user_id', userId),
+  create: async (bookingData: Partial<Booking>) => 
+    supabase.from('bookings').insert(bookingData).select().single(),
+  cancel: async (id: string) => 
+    supabase.from('bookings').update({ status: 'cancelled' }).eq('id', id).select().single(),
+};
+
+/**
+ * Tenant Application API Client
+ */
+export const applicationApi = {
+    getAll: async () => supabase.from('tenant_applications').select('*').order('created_at', { ascending: false }),
+    updateStatus: async (id: string, status: TenantApplication['status'], review_notes?: string) =>
+        supabase.from('tenant_applications').update({ status, review_notes }).eq('id', id).select().single(),
+};
