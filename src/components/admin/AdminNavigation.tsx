@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -10,7 +10,9 @@ import {
   FaCog, 
   FaUserTie, 
   FaGamepad,
-  FaTachometerAlt 
+  FaTachometerAlt,
+  FaBars,
+  FaTimes
 } from 'react-icons/fa';
 
 interface AdminNavItem {
@@ -22,6 +24,7 @@ interface AdminNavItem {
 const AdminNavigation: React.FC = () => {
   const { t } = useTranslation('common');
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems: AdminNavItem[] = [
     {
@@ -89,7 +92,8 @@ const AdminNavigation: React.FC = () => {
         </div>
       </div>
 
-      <nav className="ode-admin-nav-menu">
+      {/* Desktop Navigation */}
+      <nav className="ode-admin-nav-menu ode-admin-nav-desktop">
         <ul className="ode-admin-nav-horizontal">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -111,6 +115,48 @@ const AdminNavigation: React.FC = () => {
           })}
         </ul>
       </nav>
+
+      {/* Mobile Hamburger Button */}
+      <button 
+        className="ode-admin-hamburger"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle navigation menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Navigation Overlay */}
+      {isMobileMenuOpen && (
+        <>
+          <div 
+            className="ode-admin-mobile-overlay"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <nav className="ode-admin-nav-mobile">
+            <ul className="ode-admin-nav-mobile-list">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                
+                return (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={`ode-admin-nav-mobile-link ${isActive ? 'ode-admin-nav-mobile-link-active' : ''}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Icon className="ode-admin-nav-mobile-icon" />
+                      <span className="ode-admin-nav-mobile-text">
+                        {t(item.labelKey, item.labelKey.split('.').pop() || 'Menu')}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </>
+      )}
     </div>
   );
 };
