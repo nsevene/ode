@@ -84,6 +84,46 @@ div.ode-container {
   margin: 0 auto !important;
 }
 
+/* Two-level header structure */
+.ode-header-top {
+  background: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 8px 0 !important;
+}
+
+.ode-header-top-content {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  min-height: 40px !important;
+}
+
+.ode-header-top-left {
+  flex: 1 !important;
+}
+
+.ode-header-top-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.ode-header-auth-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.ode-header-auth-buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ode-header-main {
+  background: white !important;
+}
+
 .ode-header-content {
   display: flex !important;
   justify-content: space-between !important;
@@ -189,6 +229,226 @@ div.ode-container {
   margin-top: 24px !important;
   display: flex !important;
   gap: 12px !important;
+}
+
+/* Language Selector */
+.ode-language-selector {
+  position: relative !important;
+  display: inline-block !important;
+}
+
+.ode-language-selector-trigger {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #374151 !important;
+}
+
+.ode-language-selector-trigger:hover {
+  border-color: var(--ode-burgundy) !important;
+  background-color: #fef2f2 !important;
+}
+
+.ode-language-flag {
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+.ode-language-name {
+  color: inherit !important;
+}
+
+.ode-language-chevron {
+  width: 12px !important;
+  height: 12px !important;
+  transition: transform 0.2s ease !important;
+  color: #6b7280 !important;
+}
+
+.ode-language-chevron-open {
+  transform: rotate(180deg) !important;
+}
+
+.ode-language-dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  right: 0 !important;
+  margin-top: 4px !important;
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  min-width: 140px !important;
+  z-index: 100 !important;
+  overflow: hidden !important;
+}
+
+.ode-language-option {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  padding: 12px 16px !important;
+  background: none !important;
+  border: none !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+}
+
+.ode-language-option:hover {
+  background-color: #f9fafb !important;
+}
+
+.ode-language-option-active {
+  background-color: #fef2f2 !important;
+  color: var(--ode-burgundy) !important;
+}
+
+/* Investor Navigation */
+.ode-investor-navigation {
+  background: white !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  height: fit-content !important;
+  position: sticky !important;
+  top: 100px !important;
+}
+
+.ode-investor-nav-header {
+  margin-bottom: 24px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+.ode-investor-nav-list {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.ode-investor-nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  padding: 16px !important;
+  border-radius: 8px !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+}
+
+.ode-investor-nav-item:hover {
+  background-color: #fef2f2 !important;
+  border-color: #fecaca !important;
+}
+
+.ode-investor-nav-item-active {
+  background-color: #fef2f2 !important;
+  border-color: var(--ode-burgundy) !important;
+  color: var(--ode-burgundy) !important;
+}
+
+.ode-investor-nav-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  background-color: #f9fafb !important;
+  color: #6b7280 !important;
+  font-size: 18px !important;
+}
+
+.ode-investor-nav-item-active .ode-investor-nav-icon {
+  background-color: var(--ode-burgundy) !important;
+  color: white !important;
+}
+
+.ode-investor-nav-content {
+  flex: 1 !important;
+}
+
+.ode-investor-nav-label {
+  font-weight: 500 !important;
+  color: #1f2937 !important;
+  margin-bottom: 4px !important;
+}
+
+.ode-investor-nav-item-active .ode-investor-nav-label {
+  color: var(--ode-burgundy) !important;
+}
+
+.ode-investor-nav-description {
+  font-size: 12px !important;
+  color: #6b7280 !important;
+  line-height: 1.3 !important;
+}
+
+/* Dashboard Layout */
+.ode-dashboard-layout {
+  display: grid !important;
+  grid-template-columns: 280px 1fr !important;
+  gap: 32px !important;
+  align-items: start !important;
+}
+
+.ode-dashboard-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+}
+
+/* Improved spacing for dashboard elements */
+.ode-dashboard-header {
+  margin-bottom: 32px !important;
+}
+
+.ode-dashboard-section {
+  margin-bottom: 32px !important;
+}
+
+.ode-dashboard-section:last-child {
+  margin-bottom: 0 !important;
+}
+
+.ode-dashboard-card {
+  background: white !important;
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  margin-bottom: 24px !important;
+}
+
+.ode-dashboard-card:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Responsive dashboard */
+@media (max-width: 1024px) {
+  .ode-dashboard-layout {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  
+  .ode-investor-navigation {
+    position: static !important;
+  }
 }
 
 .ode-header-mobile-cta-link {
