@@ -9,7 +9,13 @@ export default defineConfig({
     port: 5000,
     allowedHosts: true,
     hmr: {
-      port: 5000
+      port: 5001,
+      clientPort: 443,
+      host: '0.0.0.0'
+    },
+    watch: {
+      usePolling: true,
+      interval: 1000
     }
   },
   preview: {

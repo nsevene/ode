@@ -1,0 +1,79 @@
+chrome-extension://invalid/ net::ERR_FAILED
+injectCode @ inject.js:17
+(анонимная) @ inject.js:21Пояснение к ошибке
+client:744 WebSocket connection to 'wss://9192c3e0-668a-44f8-81ba-d99aedcb1b70-00-3ijnzpbjgxpzf.pike.replit.dev:5000/?token=_sx8RE-eN3ED' failed: 
+createConnection @ client:744
+connect @ client:411
+connect @ client:750
+connect @ client:289
+connect @ client:373
+(анонимная) @ client:822Пояснение к ошибке
+client:771 [vite] failed to connect to websocket (Error: WebSocket closed without opened.). 
+overrideMethod @ hook.js:608
+connect @ client:771
+await in connect
+connect @ client:289
+connect @ client:373
+(анонимная) @ client:822Пояснение к ошибке
+client:423 Uncaught (in promise) Error: WebSocket closed without opened.
+    at WebSocket.<anonymous> (client:423:30)
+(анонимная) @ client:423Пояснение к ошибке
+i18n.ts:20 i18next: languageChanged ru
+i18n.ts:20 i18next: initialized {debug: true, initAsync: true, ns: Array(1), defaultNS: Array(1), fallbackLng: Array(1), …}
+react-dom_client.js?v=da3840fc:8149 Uncaught InvalidCharacterError: Failed to execute 'createElement' on 'Document': The tag name provided ('🍽️') is not a valid name.
+    at completeWork (react-dom_client.js?v=da3840fc:8149:39)
+    at runWithFiberInDEV (react-dom_client.js?v=da3840fc:1485:72)
+    at completeUnitOfWork (react-dom_client.js?v=da3840fc:10976:22)
+    at performUnitOfWork (react-dom_client.js?v=da3840fc:10882:29)
+    at workLoopSync (react-dom_client.js?v=da3840fc:10728:43)
+    at renderRootSync (react-dom_client.js?v=da3840fc:10711:13)
+    at performWorkOnRoot (react-dom_client.js?v=da3840fc:10359:46)
+    at performWorkOnRootViaSchedulerTask (react-dom_client.js?v=da3840fc:11623:9)
+    at MessagePort.performWorkUntilDeadline (react-dom_client.js?v=da3840fc:36:50)
+completeWork @ react-dom_client.js?v=da3840fc:8149
+runWithFiberInDEV @ react-dom_client.js?v=da3840fc:1485
+completeUnitOfWork @ react-dom_client.js?v=da3840fc:10976
+performUnitOfWork @ react-dom_client.js?v=da3840fc:10882
+workLoopSync @ react-dom_client.js?v=da3840fc:10728
+renderRootSync @ react-dom_client.js?v=da3840fc:10711
+performWorkOnRoot @ react-dom_client.js?v=da3840fc:10359
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=da3840fc:11623
+performWorkUntilDeadline @ react-dom_client.js?v=da3840fc:36
+<🍽️>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=da3840fc:250
+(анонимная) @ GamificationPage.tsx:59
+GamificationPage @ GamificationPage.tsx:53
+react_stack_bottom_frame @ react-dom_client.js?v=da3840fc:17424
+renderWithHooksAgain @ react-dom_client.js?v=da3840fc:4281
+renderWithHooks @ react-dom_client.js?v=da3840fc:4217
+updateFunctionComponent @ react-dom_client.js?v=da3840fc:6619
+beginWork @ react-dom_client.js?v=da3840fc:7654
+runWithFiberInDEV @ react-dom_client.js?v=da3840fc:1485
+performUnitOfWork @ react-dom_client.js?v=da3840fc:10868
+workLoopSync @ react-dom_client.js?v=da3840fc:10728
+renderRootSync @ react-dom_client.js?v=da3840fc:10711
+performWorkOnRoot @ react-dom_client.js?v=da3840fc:10359
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=da3840fc:11623
+performWorkUntilDeadline @ react-dom_client.js?v=da3840fc:36
+<GamificationPage>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=da3840fc:250
+App @ App.tsx:98
+react_stack_bottom_frame @ react-dom_client.js?v=da3840fc:17424
+renderWithHooksAgain @ react-dom_client.js?v=da3840fc:4281
+renderWithHooks @ react-dom_client.js?v=da3840fc:4217
+updateFunctionComponent @ react-dom_client.js?v=da3840fc:6619
+beginWork @ react-dom_client.js?v=da3840fc:7654
+runWithFiberInDEV @ react-dom_client.js?v=da3840fc:1485
+performUnitOfWork @ react-dom_client.js?v=da3840fc:10868
+workLoopSync @ react-dom_client.js?v=da3840fc:10728
+renderRootSync @ react-dom_client.js?v=da3840fc:10711
+performWorkOnRoot @ react-dom_client.js?v=da3840fc:10330
+performWorkOnRootViaSchedulerTask @ react-dom_client.js?v=da3840fc:11623
+performWorkUntilDeadline @ react-dom_client.js?v=da3840fc:36
+<App>
+exports.jsxDEV @ react_jsx-dev-runtime.js?v=da3840fc:250
+(анонимная) @ main.tsx:11Пояснение к ошибке
+GamificationPage.tsx:59 An error occurred in the <🍽️> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.

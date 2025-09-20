@@ -56,7 +56,7 @@ const GamificationPage: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`tab-item ${activeTab === tab.id ? 'active' : ''}`}
               >
-                <tab.icon style={{ width: '16px', height: '16px' }} />
+                <span style={{ fontSize: '16px' }}>{tab.icon}</span>
                 {tab.name}
               </button>
             ))}
