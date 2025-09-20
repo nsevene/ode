@@ -147,6 +147,7 @@ npm run lint
   - Реализован выпадающий список переключения языков с флагами (LanguageSelector.tsx)
   - Перенесена инвесторская навигация из header в dashboard sidebar (InvestorNavigation.tsx)
   - Обновлен InvestorDashboardPage с новой структурой навигации и улучшенными отступами
+  - Интегрирована навигация во все страницы ЛК инвестора (MarketAnalysisPage, PortfolioPage, SettingsPage)
   - Добавлены обширные CSS стили для двухуровневого header и инвесторской навигации
   - Все LSP диагностические ошибки устранены
 
