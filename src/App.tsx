@@ -43,6 +43,7 @@ import PaymentsPage from './pages/tenants/PaymentsPage'
 import MaintenancePage from './pages/tenants/MaintenancePage'
 import ApplicationStatusPage from './pages/tenants/ApplicationStatusPage'
 import LeaseDetailsPage from './pages/tenants/LeaseDetailsPage'
+import BookingPage from './pages/tenants/BookingPage'
 import { UserRole } from './types/auth'
 
 function App() {
@@ -216,6 +217,11 @@ function App() {
         <Route path="tenants/lease-details" element={
           <ProtectedRoute requiredRole={UserRole.Tenant}>
             <LeaseDetailsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="tenants/booking" element={
+          <ProtectedRoute requiredRole={UserRole.Tenant}>
+            <BookingPage />
           </ProtectedRoute>
         } />
         </Route>

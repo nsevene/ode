@@ -6,23 +6,35 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0',
+    host: 'localhost',
     port: 5000,
-    allowedHosts: true,
     hmr: {
-      port: 5001,
-      clientPort: 443,
-      host: '0.0.0.0'
+      port: 5001
     },
     watch: {
-      usePolling: true,
-      interval: 1000
+      usePolling: false
     },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'react-icons/fa', 'react-i18next', 'i18next']
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          icons: ['react-icons/fa'],
+          i18n: ['react-i18next', 'i18next']
+        }
       }
     }
   },

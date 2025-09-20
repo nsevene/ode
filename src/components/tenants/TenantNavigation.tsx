@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, Link } from 'react-router-dom'
-import { FaHome, FaCreditCard, FaWrench, FaFileAlt, FaUser, FaBell, FaSignOutAlt } from 'react-icons/fa'
+import { FaHome, FaCreditCard, FaWrench, FaFileAlt, FaBuilding, FaCalendarAlt, FaUser, FaBell, FaSignOutAlt } from 'react-icons/fa'
 
 const TenantNavigation: React.FC = () => {
   const { t } = useTranslation('common')
@@ -37,6 +37,12 @@ const TenantNavigation: React.FC = () => {
       href: '/tenants/lease-details',
       icon: FaBuilding,
       current: location.pathname === '/tenants/lease-details'
+    },
+    {
+      name: t('tenant.navigation.booking', 'Бронирование'),
+      href: '/tenants/booking',
+      icon: FaCalendarAlt,
+      current: location.pathname === '/tenants/booking'
     }
   ]
 

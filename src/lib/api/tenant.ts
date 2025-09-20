@@ -586,5 +586,75 @@ export const tenantApi = {
       console.error('Error uploading lease documents:', error)
       throw error
     }
+  },
+
+  // Booking System
+  async getBookingItems(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('booking_items')
+        .select('*')
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching booking items:', error)
+      throw error
+    }
+  },
+
+  async getTenantBookings(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('tenant_bookings')
+        .select(`
+          *,
+          booking_item:booking_items(name)
+        `)
+        .order('start_datetime', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching tenant bookings:', error)
+      throw error
+    }
+  },
+
+  async createBooking(booking: any): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('tenant_bookings')
+        .insert([{
+          booking_item_id: booking.booking_item_id,
+          booking_type: booking.booking_type,
+          start_datetime: booking.start_datetime,
+          end_datetime: booking.end_datetime,
+          purpose: booking.purpose,
+          attendees: booking.attendees,
+          special_requirements: booking.special_requirements,
+          status: 'confirmed'
+        }])
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error creating booking:', error)
+      throw error
+    }
+  },
+
+  async cancelBooking(id: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('tenant_bookings')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error cancelling booking:', error)
+      throw error
+    }
   }
 }
