@@ -31,6 +31,12 @@ const TenantNavigation: React.FC = () => {
       href: '/tenants/application-status',
       icon: FaFileAlt,
       current: location.pathname === '/tenants/application-status'
+    },
+    {
+      name: t('tenant.navigation.lease_details', 'Детали аренды'),
+      href: '/tenants/lease-details',
+      icon: FaBuilding,
+      current: location.pathname === '/tenants/lease-details'
     }
   ]
 

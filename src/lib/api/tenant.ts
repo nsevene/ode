@@ -67,10 +67,17 @@ export interface TenantLease {
   deposit: number
   status: 'active' | 'expired' | 'terminated'
   terms: string
+  documents: string[]
+  payment_history: Array<{
+    date: string
+    amount: number
+    status: 'paid' | 'pending' | 'overdue'
+  }>
   property?: {
     name: string
     address: string
     type: string
+    size: number
   }
 }
 
@@ -486,6 +493,97 @@ export const tenantApi = {
       if (error) throw error
     } catch (error) {
       console.error('Error uploading application documents:', error)
+      throw error
+    }
+  },
+
+  // Tenant Lease Management
+  async getTenantLeases(): Promise<TenantLease[]> {
+    try {
+      const { data, error } = await supabase
+        .from('leases')
+        .select(`
+          *,
+          property:properties(name, address, type, size)
+        `)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching tenant leases:', error)
+      throw error
+    }
+  },
+
+  async getTenantLeaseById(id: string): Promise<TenantLease> {
+    try {
+      const { data, error } = await supabase
+        .from('leases')
+        .select(`
+          *,
+          property:properties(name, address, type, size)
+        `)
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error fetching tenant lease:', error)
+      throw error
+    }
+  },
+
+  async makePayment(leaseId: string, payment: {
+    amount: number
+    method: string
+    description: string
+  }): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('tenant_payments')
+        .insert([{
+          lease_id: leaseId,
+          amount: payment.amount,
+          payment_method: payment.method,
+          description: payment.description,
+          due_date: new Date().toISOString(),
+          status: 'paid'
+        }])
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error making payment:', error)
+      throw error
+    }
+  },
+
+  async uploadLeaseDocuments(id: string, files: File[]): Promise<void> {
+    try {
+      const uploadPromises = files.map(async (file) => {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${id}_${Date.now()}.${fileExt}`
+        const filePath = `leases/${id}/${fileName}`
+
+        const { error } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file)
+
+        if (error) throw error
+        return filePath
+      })
+
+      const filePaths = await Promise.all(uploadPromises)
+      
+      const { error } = await supabase
+        .from('leases')
+        .update({ documents: filePaths })
+        .eq('id', id)
+
+      if (error) throw error
+    } catch (error) {
+      console.error('Error uploading lease documents:', error)
       throw error
     }
   }
