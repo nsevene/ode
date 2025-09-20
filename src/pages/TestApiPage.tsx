@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { FaCode, FaUtensils, FaCalendarAlt, FaBook, FaPlay, FaCheck, FaTimes, FaSpinner, FaHome } from 'react-icons/fa'
+import React, { useState } from 'react'
+import { FaUtensils, FaCalendarAlt, FaBook, FaPlay, FaCheck, FaTimes, FaSpinner, FaHome } from 'react-icons/fa'
 import { api, formatPrice, formatDate, formatTime } from '../lib/api'
 import type { MenuItem, Event, BookingRequest } from '../lib/api'
 
@@ -53,7 +53,7 @@ const TestApiPage: React.FC = () => {
         special_requests: 'Test booking'
       }
       const result = await api.createBooking(bookingData)
-      setBookingResult(`Booking created successfully! ID: ${result.booking_id}`)
+      setBookingResult(`Booking created successfully! ID: ${result.data?.booking_id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create booking')
     } finally {
@@ -158,10 +158,10 @@ const TestApiPage: React.FC = () => {
                       </div>
                       <p className="ode-text-sm ode-text-gray ode-mb-2">{event.description}</p>
                       <div className="ode-text-xs ode-text-gray">
-                        <div><strong>Дата:</strong> {formatDate(event.date)}</div>
+                        <div><strong>Дата:</strong> {formatDate(event.event_date)}</div>
                         <div><strong>Время:</strong> {formatTime(event.start_time)} - {formatTime(event.end_time)}</div>
                         <div><strong>Место:</strong> {event.location}</div>
-                        <div><strong>Мест:</strong> {event.available_spots}</div>
+                        <div><strong>Мест:</strong> {event.spots_remaining}</div>
                       </div>
                     </div>
                   ))}

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { UserRole } from '../types/auth'
-import { FaEye, FaEyeSlash, FaUser, FaLock, FaEnvelope, FaBuilding } from 'react-icons/fa'
+import { FaEye, FaEyeSlash, FaLock, FaEnvelope, FaBuilding } from 'react-icons/fa'
 
 const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState('')
