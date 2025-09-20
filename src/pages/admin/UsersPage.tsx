@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { FaSearch, FaPlus, FaEdit, FaTrash, FaUser, FaEnvelope, FaCalendar, FaShieldAlt, FaBuilding, FaDollarSign } from 'react-icons/fa'
 import { UserRole } from '../../types/auth'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 
 const UsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -152,15 +153,15 @@ const UsersPage: React.FC = () => {
   }
 
   return (
-    <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <div className="ode-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-            <div>
-              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Управление пользователями</h1>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Управление пользователями</h1>
               <p className="ode-text-gray">Просмотр и управление пользователями системы</p>
-            </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={handleAddUser} className="ode-btn ode-btn-primary">
                 <FaPlus style={{ marginRight: '8px' }} />

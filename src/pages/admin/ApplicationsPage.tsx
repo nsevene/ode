@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { FaSearch, FaFilter, FaEye, FaCheck, FaTimes, FaUser, FaBuilding, FaCalendar, FaPlus } from 'react-icons/fa'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 
 const ApplicationsPage: React.FC = () => {
   const [filter, setFilter] = useState('all')
@@ -155,11 +156,13 @@ const ApplicationsPage: React.FC = () => {
   }
 
   return (
-    <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <div className="ode-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
             <div>
               <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Управление заявками</h1>
               <p className="ode-text-gray">Просмотр и обработка заявок от арендаторов и инвесторов</p>

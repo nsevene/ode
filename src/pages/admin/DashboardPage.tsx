@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 import { 
   FaUsers, FaFileAlt, FaBuilding, FaDollarSign, FaChartLine, FaCog, FaShieldAlt, 
   FaGamepad, FaFolder, FaBell,
@@ -179,13 +180,14 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <div className="ode-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-            <div>
-              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Панель администратора</h1>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Панель администратора</h1>
               <p className="ode-text-gray">Добро пожаловать, {user?.email}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
