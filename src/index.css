@@ -1464,6 +1464,19 @@ div.ode-container {
   .ode-investor-hamburger {
     display: block !important;
   }
+  
+  /* Header Mobile Navigation */
+  .ode-header-nav {
+    display: none !important;
+  }
+  
+  .ode-header-cta {
+    display: none !important;
+  }
+  
+  .ode-header-mobile-menu {
+    display: block !important;
+  }
 }
 
 /* Tab Styles */
