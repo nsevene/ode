@@ -1,0 +1,229 @@
+{
+  "project": "ODPortal B2B Platform",
+  "current_phase": "Phase 2 - Real Database Integration",
+  "phase_started": "2025-09-20T12:24:00Z",
+  "total_estimated_hours": 30,
+  "completed_hours": 0,
+  "current_task": "1.1",
+  "tasks": [
+    {
+      "id": "1.1",
+      "title": "Создание схемы базы данных",
+      "category": "Database Setup",
+      "status": "pending",
+      "priority": "critical",
+      "estimated_hours": 3,
+      "dependencies": ["Supabase project configured"],
+      "started_at": null,
+      "completed_at": null,
+      "files_to_create": [
+        "supabase/migrations/001_create_profiles.sql",
+        "supabase/migrations/002_create_tenant_applications.sql",
+        "supabase/migrations/003_create_properties.sql",
+        "supabase/migrations/004_create_investments.sql",
+        "supabase/migrations/005_create_documents.sql",
+        "supabase/migrations/006_create_audit_logs.sql"
+      ],
+      "acceptance_criteria": [
+        "All migrations apply without errors",
+        "RLS prevents cross-tenant access",
+        "Seed script creates test data",
+        "Supabase schema visible in admin"
+      ]
+    },
+    {
+      "id": "1.2",
+      "title": "Настройка Storage и бакетов",
+      "category": "Database Setup",
+      "status": "pending",
+      "priority": "critical", 
+      "estimated_hours": 1,
+      "dependencies": ["1.1"],
+      "files_to_create": [
+        "supabase/storage-setup.sql"
+      ],
+      "acceptance_criteria": [
+        "Storage buckets created and accessible",
+        "Security policies working",
+        "Signed URLs generate correctly"
+      ]
+    },
+    {
+      "id": "2.1",
+      "title": "Настройка Supabase Auth",
+      "category": "Authentication",
+      "status": "pending",
+      "priority": "critical",
+      "estimated_hours": 2,
+      "dependencies": ["1.1"],
+      "files_to_update": [
+        "src/lib/supabase.ts"
+      ],
+      "files_to_create": [
+        "src/lib/auth.ts",
+        "supabase/migrations/007_auth_triggers.sql"
+      ]
+    },
+    {
+      "id": "2.2", 
+      "title": "Управление ролями",
+      "category": "Authentication",
+      "status": "pending",
+      "priority": "high",
+      "estimated_hours": 1.5,
+      "dependencies": ["2.1"],
+      "files_to_create": [
+        "supabase/functions/manage-user-roles/index.ts",
+        "src/components/admin/UserRoleManager.tsx"
+      ]
+    },
+    {
+      "id": "3.1",
+      "title": "Реальная форма подачи заявки",
+      "category": "Tenant Applications",
+      "status": "pending", 
+      "priority": "critical",
+      "estimated_hours": 3,
+      "dependencies": ["1.1", "1.2", "2.1"],
+      "files_to_update": [
+        "src/features/tenants/ApplicationForm.tsx"
+      ],
+      "files_to_create": [
+        "src/lib/api/applications.ts",
+        "supabase/functions/submit-tenant-application/index.ts"
+      ]
+    },
+    {
+      "id": "3.2",
+      "title": "Статус заявки для арендатора", 
+      "category": "Tenant Applications",
+      "status": "pending",
+      "priority": "medium",
+      "estimated_hours": 2,
+      "dependencies": ["3.1"],
+      "files_to_create": [
+        "src/pages/ApplicationStatusPage.tsx"
+      ]
+    },
+    {
+      "id": "4.1",
+      "title": "Список заявок с фильтрацией",
+      "category": "Admin Panel",
+      "status": "pending",
+      "priority": "critical",
+      "estimated_hours": 3,
+      "dependencies": ["3.1"],
+      "files_to_update": [
+        "src/pages/admin/ApplicationsPage.tsx"
+      ],
+      "files_to_create": [
+        "src/lib/api/admin.ts"
+      ]
+    },
+    {
+      "id": "4.2",
+      "title": "Детальный просмотр и обработка заявки",
+      "category": "Admin Panel", 
+      "status": "pending",
+      "priority": "high",
+      "estimated_hours": 2.5,
+      "dependencies": ["4.1"],
+      "files_to_create": [
+        "src/pages/admin/ApplicationDetailPage.tsx"
+      ]
+    },
+    {
+      "id": "5.1",
+      "title": "Дашборд с KPI и портфелем",
+      "category": "Investor Dashboard",
+      "status": "pending",
+      "priority": "critical", 
+      "estimated_hours": 3,
+      "dependencies": ["1.1"],
+      "files_to_update": [
+        "src/pages/investors/InvestorDashboardPage.tsx"
+      ],
+      "files_to_create": [
+        "src/lib/api/investor.ts",
+        "supabase/migrations/008_create_investments.sql"
+      ]
+    },
+    {
+      "id": "5.2",
+      "title": "Data Room с документами",
+      "category": "Investor Dashboard",
+      "status": "pending",
+      "priority": "medium",
+      "estimated_hours": 2,
+      "dependencies": ["5.1", "1.2"],
+      "files_to_create": [
+        "src/pages/investors/DataRoomPage.tsx"
+      ]
+    },
+    {
+      "id": "6.1",
+      "title": "Типизированный API слой",
+      "category": "API Layer",
+      "status": "pending",
+      "priority": "high",
+      "estimated_hours": 2,
+      "dependencies": ["All previous tasks"],
+      "files_to_create": [
+        "src/lib/api/types.ts",
+        "src/lib/api/documents.ts"
+      ]
+    },
+    {
+      "id": "6.2",
+      "title": "Edge Functions",
+      "category": "API Layer", 
+      "status": "pending",
+      "priority": "medium",
+      "estimated_hours": 2.5,
+      "dependencies": ["6.1"],
+      "files_to_create": [
+        "supabase/functions/send-notifications/index.ts",
+        "supabase/functions/generate-reports/index.ts"
+      ]
+    },
+    {
+      "id": "7.1",
+      "title": "Playwright E2E тесты",
+      "category": "Testing",
+      "status": "pending",
+      "priority": "high",
+      "estimated_hours": 3,
+      "dependencies": ["All functions implemented"],
+      "files_to_create": [
+        "tests/e2e/tenant-application-flow.spec.ts",
+        "tests/e2e/admin-processing.spec.ts",
+        "tests/e2e/investor-dashboard.spec.ts"
+      ]
+    },
+    {
+      "id": "7.2",
+      "title": "Security аудит",
+      "category": "Testing",
+      "status": "pending",
+      "priority": "critical",
+      "estimated_hours": 1.5,
+      "dependencies": ["7.1"],
+      "files_to_create": [
+        "SECURITY_AUDIT.md"
+      ]
+    }
+  ],
+  "completed_tasks": [],
+  "failed_tasks": [],
+  "blockers": [],
+  "notes": [
+    "Phase 2 план создан - фокус на реальной функциональности с БД",
+    "Все mock данные должны быть заменены на реальные",
+    "RLS и security - критически важны для продакшена"
+  ],
+  "next_actions": [
+    "Проверить статус Supabase проекта и переменных окружения",
+    "Начать с задачи 1.1 - создание схемы БД",
+    "Настроить миграции и seed данные"
+  ]
+}
