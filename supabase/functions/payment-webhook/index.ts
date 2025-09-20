@@ -4,7 +4,8 @@ import Stripe from 'https://esm.sh/stripe@14.21.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
@@ -24,9 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405, 
-      headers: corsHeaders 
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders,
     });
   }
 
@@ -37,9 +38,9 @@ const handler = async (req: Request): Promise<Response> => {
     if (!signature) {
       return new Response(
         JSON.stringify({ error: 'Missing stripe signature' }),
-        { 
-          status: 400, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         }
       );
     }
@@ -55,13 +56,10 @@ const handler = async (req: Request): Promise<Response> => {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err);
-      return new Response(
-        JSON.stringify({ error: 'Invalid signature' }),
-        { 
-          status: 400, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     console.log(`Processing webhook event: ${event.type}`);
@@ -69,37 +67,41 @@ const handler = async (req: Request): Promise<Response> => {
     // Handle different event types
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(event.data.object as Stripe.Checkout.Session);
+        await handleCheckoutSessionCompleted(
+          event.data.object as Stripe.Checkout.Session
+        );
         break;
-      
+
       case 'payment_intent.succeeded':
-        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+        await handlePaymentIntentSucceeded(
+          event.data.object as Stripe.PaymentIntent
+        );
         break;
-      
+
       case 'payment_intent.payment_failed':
-        await handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+        await handlePaymentIntentFailed(
+          event.data.object as Stripe.PaymentIntent
+        );
         break;
-      
+
       case 'invoice.payment_succeeded':
-        await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
+        await handleInvoicePaymentSucceeded(
+          event.data.object as Stripe.Invoice
+        );
         break;
-      
+
       case 'invoice.payment_failed':
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
-      
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    return new Response(
-      JSON.stringify({ received: true }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
   } catch (error: any) {
     console.error('Error in payment-webhook function:', error);
     return new Response(
@@ -113,7 +115,9 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 // Handle successful checkout session
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutSessionCompleted(
+  session: Stripe.Checkout.Session
+) {
   console.log('Checkout session completed:', session.id);
 
   const bookingId = session.metadata?.booking_id;
@@ -130,7 +134,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       stripe_session_id: session.id,
       stripe_payment_intent_id: session.payment_intent as string,
       status: 'confirmed',
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', bookingId);
 
@@ -150,7 +154,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       status: 'succeeded',
       stripe_session_id: session.id,
       customer_email: session.customer_email,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
 
   if (paymentError) {
@@ -171,8 +175,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         body: {
           type: 'confirmation',
           bookingId: bookingId,
-          recipientEmail: booking.guest_email
-        }
+          recipientEmail: booking.guest_email,
+        },
       });
     }
   } catch (emailError) {
@@ -183,7 +187,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 }
 
 // Handle successful payment intent
-async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent) {
+async function handlePaymentIntentSucceeded(
+  paymentIntent: Stripe.PaymentIntent
+) {
   console.log('Payment intent succeeded:', paymentIntent.id);
 
   // Update payment record
@@ -191,7 +197,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     .from('payment_intents')
     .update({
       status: 'succeeded',
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', paymentIntent.id);
 
@@ -209,8 +215,9 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
     .from('payment_intents')
     .update({
       status: 'failed',
-      failure_reason: paymentIntent.last_payment_error?.message || 'Payment failed',
-      updated_at: new Date().toISOString()
+      failure_reason:
+        paymentIntent.last_payment_error?.message || 'Payment failed',
+      updated_at: new Date().toISOString(),
     })
     .eq('id', paymentIntent.id);
 
@@ -231,7 +238,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
       .update({
         payment_status: 'failed',
         status: 'cancelled',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', payment.booking_id);
   }
@@ -240,7 +247,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
 // Handle successful invoice payment
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log('Invoice payment succeeded:', invoice.id);
-  
+
   // Handle subscription or recurring payment logic here
   // This would be for tenant rent, membership fees, etc.
 }
@@ -248,7 +255,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 // Handle failed invoice payment
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.log('Invoice payment failed:', invoice.id);
-  
+
   // Handle failed recurring payment logic here
   // This would trigger dunning management, suspension, etc.
 }

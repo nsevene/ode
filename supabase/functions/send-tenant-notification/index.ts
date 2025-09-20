@@ -8,7 +8,8 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 interface TenantNotificationRequest {
@@ -26,18 +27,19 @@ const createEmailHTML = (data: {
   admin_comment?: string;
   booking_id: string;
 }) => {
-  const { company_name, contact_person, status, admin_comment, booking_id } = data;
-  
+  const { company_name, contact_person, status, admin_comment, booking_id } =
+    data;
+
   const statusText = {
     approved: 'одобрена',
-    rejected: 'отклонена', 
-    pending: 'находится на рассмотрении'
+    rejected: 'отклонена',
+    pending: 'находится на рассмотрении',
   };
 
   const statusColor = {
     approved: '#22c55e',
     rejected: '#ef4444',
-    pending: '#f59e0b'
+    pending: '#f59e0b',
   };
 
   return `
@@ -55,30 +57,41 @@ const createEmailHTML = (data: {
 
         <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; margin-bottom: 20px;">
           <h2 style="color: ${statusColor[status]}; margin-top: 0;">
-            ${status === 'approved' ? '🎉 Заявка одобрена!' : 
-              status === 'rejected' ? '📋 Обновление заявки' : 
-              '⏳ Заявка получена'}
+            ${
+              status === 'approved'
+                ? '🎉 Заявка одобрена!'
+                : status === 'rejected'
+                  ? '📋 Обновление заявки'
+                  : '⏳ Заявка получена'
+            }
           </h2>
           
           <p>Здравствуйте, <strong>${contact_person}</strong>!</p>
           
           <p>
-            ${status === 'approved' 
-              ? `Отличные новости! Ваша заявка от компании <strong>${company_name}</strong> на аренду помещения в ODE Food Hall была <strong style="color: ${statusColor[status]};">одобрена</strong>.`
-              : status === 'rejected'
-              ? `К сожалению, мы не можем одобрить заявку от компании <strong>${company_name}</strong> на аренду помещения в ODE Food Hall в данный момент.`
-              : `Спасибо за вашу заявку от компании <strong>${company_name}</strong> на аренду помещения в ODE Food Hall. Ваша заявка получена и находится на рассмотрении.`
+            ${
+              status === 'approved'
+                ? `Отличные новости! Ваша заявка от компании <strong>${company_name}</strong> на аренду помещения в ODE Food Hall была <strong style="color: ${statusColor[status]};">одобрена</strong>.`
+                : status === 'rejected'
+                  ? `К сожалению, мы не можем одобрить заявку от компании <strong>${company_name}</strong> на аренду помещения в ODE Food Hall в данный момент.`
+                  : `Спасибо за вашу заявку от компании <strong>${company_name}</strong> на аренду помещения в ODE Food Hall. Ваша заявка получена и находится на рассмотрении.`
             }
           </p>
 
-          ${admin_comment ? `
+          ${
+            admin_comment
+              ? `
             <div style="background-color: #e9ecef; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid ${statusColor[status]};">
               <p style="margin: 0; font-weight: bold; color: #495057; font-size: 14px;">Комментарий от нашей команды:</p>
               <p style="margin: 8px 0 0 0; color: #495057; font-style: italic;">${admin_comment}</p>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
 
-          ${status === 'approved' ? `
+          ${
+            status === 'approved'
+              ? `
             <div style="background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; padding: 20px; margin: 20px 0;">
               <p style="margin: 0 0 10px 0; font-weight: bold; color: #155724;">Следующие шаги:</p>
               <ul style="margin: 0; color: #155724;">
@@ -88,17 +101,21 @@ const createEmailHTML = (data: {
                 <li>Проведем вас через процесс оформления</li>
               </ul>
             </div>
-          ` : status === 'rejected' ? `
+          `
+              : status === 'rejected'
+                ? `
             <p style="color: #721c24;">
               Мы ценим ваш интерес к ODE Food Hall. Если у вас есть вопросы или вы хотели бы 
               обсудить возможности сотрудничества в будущем, не стесняйтесь обращаться к нам.
             </p>
-          ` : `
+          `
+                : `
             <p>
               Мы рассмотрим вашу заявку и свяжемся с вами в течение 2-3 рабочих дней. 
               Если у вас есть дополнительные вопросы, вы можете связаться с нами по указанным ниже контактам.
             </p>
-          `}
+          `
+          }
 
           <div style="background-color: #fff; border: 1px solid #dee2e6; border-radius: 6px; padding: 20px; margin-top: 30px;">
             <p style="margin: 0 0 10px 0; font-weight: bold;">Контакты для связи:</p>
@@ -128,8 +145,15 @@ const createAdminNotificationHTML = (data: {
   booking_id: string;
   status: string;
 }) => {
-  const { company_name, contact_person, email, business_type, booking_id, status } = data;
-  
+  const {
+    company_name,
+    contact_person,
+    email,
+    business_type,
+    booking_id,
+    status,
+  } = data;
+
   return `
     <!DOCTYPE html>
     <html>
@@ -180,9 +204,16 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { booking_id, status, admin_comment, notify_admins }: TenantNotificationRequest = await req.json();
+    const {
+      booking_id,
+      status,
+      admin_comment,
+      notify_admins,
+    }: TenantNotificationRequest = await req.json();
 
-    console.log(`Processing notification for booking ${booking_id}, status: ${status}`);
+    console.log(
+      `Processing notification for booking ${booking_id}, status: ${status}`
+    );
 
     // Get booking details
     const { data: booking, error: bookingError } = await supabase
@@ -201,13 +232,13 @@ const handler = async (req: Request): Promise<Response> => {
       contact_person: booking.contact_person,
       status: status,
       admin_comment: admin_comment,
-      booking_id: booking_id
+      booking_id: booking_id,
     });
 
     const subjectMap = {
       approved: `🎉 Ваша заявка одобрена - ${booking.company_name}`,
       rejected: `📋 Обновление по заявке - ${booking.company_name}`,
-      pending: `⏳ Заявка получена - ${booking.company_name}`
+      pending: `⏳ Заявка получена - ${booking.company_name}`,
     };
 
     console.log(`Sending email to applicant: ${booking.email}`);
@@ -229,16 +260,18 @@ const handler = async (req: Request): Promise<Response> => {
         email: booking.email,
         business_type: booking.business_type,
         booking_id: booking_id,
-        status: status
+        status: status,
       });
 
       // Get admin emails
       const { data: adminUsers, error: adminError } = await supabase
         .from('user_roles')
-        .select(`
+        .select(
+          `
           user_id,
           profiles!user_roles_user_id_fkey(id)
-        `)
+        `
+        )
         .eq('role', 'admin');
 
       if (!adminError && adminUsers?.length) {
@@ -258,24 +291,23 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Notifications sent successfully',
         applicant_email: booking.email,
-        status: status
+        status: status,
       }),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
-
   } catch (error: any) {
     console.error('Error in send-tenant-notification function:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
-        details: error.stack 
+        details: error.stack,
       }),
       {
         status: 500,

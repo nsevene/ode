@@ -3,7 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 interface RoleManagementRequest {
@@ -22,14 +23,21 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405, 
-      headers: corsHeaders 
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders,
     });
   }
 
   try {
-    const { action, userEmail, userId, role, targetUserEmail, targetUserId }: RoleManagementRequest = await req.json();
+    const {
+      action,
+      userEmail,
+      userId,
+      role,
+      targetUserEmail,
+      targetUserId,
+    }: RoleManagementRequest = await req.json();
 
     // Initialize Supabase with service role key for secure operations
     const supabase = createClient(
@@ -41,53 +49,73 @@ const handler = async (req: Request): Promise<Response> => {
     // Get the requesting user's role
     const requestingUser = await getRequestingUser(req, supabase);
     if (!requestingUser) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          status: 401, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     const requestingUserRole = await getUserRole(requestingUser.id, supabase);
-    
+
     // Only admins can manage roles
     if (requestingUserRole !== 'admin') {
       return new Response(
-        JSON.stringify({ error: 'Insufficient permissions. Admin role required.' }),
-        { 
-          status: 403, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        JSON.stringify({
+          error: 'Insufficient permissions. Admin role required.',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         }
       );
     }
 
-    console.log(`Processing role management action: ${action} by user: ${requestingUser.email}`);
+    console.log(
+      `Processing role management action: ${action} by user: ${requestingUser.email}`
+    );
 
     switch (action) {
       case 'assign':
-        return await assignRole(supabase, targetUserEmail, targetUserId, role!, corsHeaders);
-      
+        return await assignRole(
+          supabase,
+          targetUserEmail,
+          targetUserId,
+          role!,
+          corsHeaders
+        );
+
       case 'revoke':
-        return await revokeRole(supabase, targetUserEmail, targetUserId, role!, corsHeaders);
-      
+        return await revokeRole(
+          supabase,
+          targetUserEmail,
+          targetUserId,
+          role!,
+          corsHeaders
+        );
+
       case 'list':
         return await listUserRoles(supabase, corsHeaders);
-      
+
       case 'check':
-        return await checkUserRole(supabase, targetUserEmail, targetUserId, corsHeaders);
-      
+        return await checkUserRole(
+          supabase,
+          targetUserEmail,
+          targetUserId,
+          corsHeaders
+        );
+
       default:
         return new Response(
-          JSON.stringify({ error: 'Invalid action. Supported actions: assign, revoke, list, check' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          JSON.stringify({
+            error:
+              'Invalid action. Supported actions: assign, revoke, list, check',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
           }
         );
     }
-
   } catch (error: any) {
     console.error('Error in user-roles-management function:', error);
     return new Response(
@@ -108,8 +136,11 @@ async function getRequestingUser(req: Request, supabase: any) {
   }
 
   const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
   if (error || !user) {
     return null;
   }
@@ -133,13 +164,19 @@ async function getUserRole(userId: string, supabase: any): Promise<string> {
 }
 
 // Assign role to user
-async function assignRole(supabase: any, userEmail?: string, userId?: string, role?: string, corsHeaders: any) {
+async function assignRole(
+  supabase: any,
+  userEmail?: string,
+  userId?: string,
+  role?: string,
+  corsHeaders: any
+) {
   if (!role) {
     return new Response(
       JSON.stringify({ error: 'Role is required for assignment' }),
-      { 
-        status: 400, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
@@ -148,15 +185,13 @@ async function assignRole(supabase: any, userEmail?: string, userId?: string, ro
 
   // If email provided, get user ID
   if (userEmail && !userId) {
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(userEmail);
+    const { data: userData, error: userError } =
+      await supabase.auth.admin.getUserByEmail(userEmail);
     if (userError || !userData.user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { 
-          status: 404, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
     targetUserId = userData.user.id;
   }
@@ -164,9 +199,9 @@ async function assignRole(supabase: any, userEmail?: string, userId?: string, ro
   if (!targetUserId) {
     return new Response(
       JSON.stringify({ error: 'User ID or email is required' }),
-      { 
-        status: 400, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
@@ -174,47 +209,45 @@ async function assignRole(supabase: any, userEmail?: string, userId?: string, ro
   // Insert or update role
   const { data, error } = await supabase
     .from('user_roles')
-    .upsert({
-      user_id: targetUserId,
-      role: role,
-      updated_at: new Date().toISOString()
-    }, {
-      onConflict: 'user_id,role'
-    })
+    .upsert(
+      {
+        user_id: targetUserId,
+        role: role,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'user_id,role',
+      }
+    )
     .select()
     .single();
 
   if (error) {
     console.error('Error assigning role:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to assign role' }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Failed to assign role' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
   }
 
   // Log the role assignment
-  await supabase
-    .from('security_logs')
-    .insert({
-      violation_type: 'role_assignment',
-      user_id: targetUserId,
-      details: {
-        action: 'assign',
-        role: role,
-        assigned_by: 'admin',
-        timestamp: new Date().toISOString()
-      }
-    });
+  await supabase.from('security_logs').insert({
+    violation_type: 'role_assignment',
+    user_id: targetUserId,
+    details: {
+      action: 'assign',
+      role: role,
+      assigned_by: 'admin',
+      timestamp: new Date().toISOString(),
+    },
+  });
 
   return new Response(
-    JSON.stringify({ 
-      success: true, 
+    JSON.stringify({
+      success: true,
       message: `Role ${role} assigned successfully`,
       user_id: targetUserId,
-      role: role
+      role: role,
     }),
     {
       status: 200,
@@ -224,13 +257,19 @@ async function assignRole(supabase: any, userEmail?: string, userId?: string, ro
 }
 
 // Revoke role from user
-async function revokeRole(supabase: any, userEmail?: string, userId?: string, role?: string, corsHeaders: any) {
+async function revokeRole(
+  supabase: any,
+  userEmail?: string,
+  userId?: string,
+  role?: string,
+  corsHeaders: any
+) {
   if (!role) {
     return new Response(
       JSON.stringify({ error: 'Role is required for revocation' }),
-      { 
-        status: 400, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
@@ -239,15 +278,13 @@ async function revokeRole(supabase: any, userEmail?: string, userId?: string, ro
 
   // If email provided, get user ID
   if (userEmail && !userId) {
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(userEmail);
+    const { data: userData, error: userError } =
+      await supabase.auth.admin.getUserByEmail(userEmail);
     if (userError || !userData.user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { 
-          status: 404, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
     targetUserId = userData.user.id;
   }
@@ -255,9 +292,9 @@ async function revokeRole(supabase: any, userEmail?: string, userId?: string, ro
   if (!targetUserId) {
     return new Response(
       JSON.stringify({ error: 'User ID or email is required' }),
-      { 
-        status: 400, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
@@ -271,35 +308,30 @@ async function revokeRole(supabase: any, userEmail?: string, userId?: string, ro
 
   if (error) {
     console.error('Error revoking role:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to revoke role' }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Failed to revoke role' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
   }
 
   // Log the role revocation
-  await supabase
-    .from('security_logs')
-    .insert({
-      violation_type: 'role_revocation',
-      user_id: targetUserId,
-      details: {
-        action: 'revoke',
-        role: role,
-        revoked_by: 'admin',
-        timestamp: new Date().toISOString()
-      }
-    });
+  await supabase.from('security_logs').insert({
+    violation_type: 'role_revocation',
+    user_id: targetUserId,
+    details: {
+      action: 'revoke',
+      role: role,
+      revoked_by: 'admin',
+      timestamp: new Date().toISOString(),
+    },
+  });
 
   return new Response(
-    JSON.stringify({ 
-      success: true, 
+    JSON.stringify({
+      success: true,
       message: `Role ${role} revoked successfully`,
       user_id: targetUserId,
-      role: role
+      role: role,
     }),
     {
       status: 200,
@@ -312,7 +344,8 @@ async function revokeRole(supabase: any, userEmail?: string, userId?: string, ro
 async function listUserRoles(supabase: any, corsHeaders: any) {
   const { data, error } = await supabase
     .from('user_roles')
-    .select(`
+    .select(
+      `
       id,
       user_id,
       role,
@@ -323,25 +356,26 @@ async function listUserRoles(supabase: any, corsHeaders: any) {
         email,
         full_name
       )
-    `)
+    `
+    )
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error listing user roles:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to list user roles' }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
 
   return new Response(
-    JSON.stringify({ 
-      success: true, 
+    JSON.stringify({
+      success: true,
       roles: data,
-      count: data.length
+      count: data.length,
     }),
     {
       status: 200,
@@ -351,20 +385,23 @@ async function listUserRoles(supabase: any, corsHeaders: any) {
 }
 
 // Check user role
-async function checkUserRole(supabase: any, userEmail?: string, userId?: string, corsHeaders: any) {
+async function checkUserRole(
+  supabase: any,
+  userEmail?: string,
+  userId?: string,
+  corsHeaders: any
+) {
   let targetUserId = userId;
 
   // If email provided, get user ID
   if (userEmail && !userId) {
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(userEmail);
+    const { data: userData, error: userError } =
+      await supabase.auth.admin.getUserByEmail(userEmail);
     if (userError || !userData.user) {
-      return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { 
-          status: 404, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
     targetUserId = userData.user.id;
   }
@@ -372,9 +409,9 @@ async function checkUserRole(supabase: any, userEmail?: string, userId?: string,
   if (!targetUserId) {
     return new Response(
       JSON.stringify({ error: 'User ID or email is required' }),
-      { 
-        status: 400, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
@@ -388,19 +425,19 @@ async function checkUserRole(supabase: any, userEmail?: string, userId?: string,
     console.error('Error checking user role:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to check user role' }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }
 
   return new Response(
-    JSON.stringify({ 
-      success: true, 
+    JSON.stringify({
+      success: true,
       user_id: targetUserId,
       roles: data,
-      primary_role: data.length > 0 ? data[0].role : 'guest'
+      primary_role: data.length > 0 ? data[0].role : 'guest',
     }),
     {
       status: 200,

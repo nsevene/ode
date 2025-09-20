@@ -1,30 +1,25 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { 
-      event_type, 
-      user_id, 
-      details, 
-      ip_address, 
-      user_agent,
-      timestamp 
-    } = await req.json()
+    const { event_type, user_id, details, ip_address, user_agent, timestamp } =
+      await req.json();
 
     // Log security event for monitoring
     console.log('Security Event Received:', {
@@ -33,14 +28,15 @@ serve(async (req) => {
       timestamp,
       ip_address,
       user_agent: user_agent?.substring(0, 100), // Truncate long user agents
-      details_keys: details ? Object.keys(details) : []
-    })
+      details_keys: details ? Object.keys(details) : [],
+    });
 
     // Get client IP from headers if not provided
-    const clientIP = ip_address || 
-      req.headers.get('x-forwarded-for') || 
+    const clientIP =
+      ip_address ||
+      req.headers.get('x-forwarded-for') ||
       req.headers.get('cf-connecting-ip') ||
-      'unknown'
+      'unknown';
 
     // Store security event (if needed for compliance)
     // const { error } = await supabase
@@ -60,34 +56,33 @@ serve(async (req) => {
       user: user_id,
       ip: clientIP,
       time: timestamp,
-      details
-    })
+      details,
+    });
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Security event logged',
-        event_id: crypto.randomUUID()
+        event_id: crypto.randomUUID(),
       }),
       {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        }
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
       }
-    )
-
+    );
   } catch (error) {
-    console.error('Security logging error:', error)
+    console.error('Security logging error:', error);
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'Failed to log security event' 
+      JSON.stringify({
+        success: false,
+        error: 'Failed to log security event',
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
-    )
+    );
   }
-})
+});

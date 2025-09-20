@@ -1,12 +1,12 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
+import { Resend } from 'npm:resend@2.0.0';
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 interface VendorEmailRequest {
@@ -19,17 +19,28 @@ interface VendorEmailRequest {
 
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { to, subject, content, vendor_name, company_name }: VendorEmailRequest = await req.json();
+    const {
+      to,
+      subject,
+      content,
+      vendor_name,
+      company_name,
+    }: VendorEmailRequest = await req.json();
 
-    console.log("Sending email to vendor:", { to, subject, vendor_name, company_name });
+    console.log('Sending email to vendor:', {
+      to,
+      subject,
+      vendor_name,
+      company_name,
+    });
 
     const emailResponse = await resend.emails.send({
-      from: "ODE Food Hall <noreply@odebaku.com>",
+      from: 'ODE Food Hall <noreply@odebaku.com>',
       to: [to],
       subject: subject,
       html: `
@@ -64,28 +75,31 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log('Email sent successfully:', emailResponse);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      messageId: emailResponse.data?.id 
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
-  } catch (error: any) {
-    console.error("Error in send-vendor-email function:", error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
+        success: true,
+        messageId: emailResponse.data?.id,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error('Error in send-vendor-email function:', error);
+    return new Response(
+      JSON.stringify({
         error: error.message,
-        success: false 
+        success: false,
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
   }

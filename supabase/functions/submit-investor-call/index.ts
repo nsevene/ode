@@ -4,7 +4,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -33,9 +34,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405, 
-      headers: corsHeaders 
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders,
     });
   }
 
@@ -45,16 +46,16 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Processing investor intro call request:', {
       name: requestData.name,
       email: requestData.email,
-      company: requestData.company
+      company: requestData.company,
     });
 
     // Validate required fields
     if (!requestData.name || !requestData.email) {
       return new Response(
         JSON.stringify({ error: 'Name and email are required' }),
-        { 
-          status: 400, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         }
       );
     }
@@ -67,20 +68,17 @@ const handler = async (req: Request): Promise<Response> => {
         email: requestData.email,
         phone: requestData.phone || '',
         message: `Investment Call Request\n\nCompany: ${requestData.company || 'Not specified'}\nInvestment Range: ${requestData.investment_range || 'Not specified'}\nTimeline: ${requestData.investment_timeline || 'Not specified'}\nPreferred Contact: ${requestData.preferred_method || 'Email'}\nBest Time: ${requestData.preferred_time || 'Any time'}\n\nMessage:\n${requestData.message || 'No additional message'}`,
-        status: 'new'
+        status: 'new',
       })
       .select()
       .single();
 
     if (dbError) {
       console.error('Database error:', dbError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to save request' }),
-        { 
-          status: 500, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Failed to save request' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Send confirmation email to investor
@@ -106,10 +104,14 @@ const handler = async (req: Request): Promise<Response> => {
           <li><strong>Best Time:</strong> ${requestData.preferred_time || 'Any time'}</li>
         </ul>
         
-        ${requestData.message ? `
+        ${
+          requestData.message
+            ? `
         <h2>Your Message:</h2>
         <p>${requestData.message}</p>
-        ` : ''}
+        `
+            : ''
+        }
         
         <h2>Next Steps:</h2>
         <ol>
@@ -135,7 +137,10 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (confirmationEmailResult.error) {
-      console.error('Failed to send confirmation email:', confirmationEmailResult.error);
+      console.error(
+        'Failed to send confirmation email:',
+        confirmationEmailResult.error
+      );
     } else {
       console.log('Confirmation email sent successfully');
     }
@@ -167,10 +172,14 @@ const handler = async (req: Request): Promise<Response> => {
             <li><strong>Best Time to Contact:</strong> ${requestData.preferred_time || 'Any time'}</li>
           </ul>
           
-          ${requestData.message ? `
+          ${
+            requestData.message
+              ? `
           <h2>Message:</h2>
           <p>${requestData.message}</p>
-          ` : ''}
+          `
+              : ''
+          }
           
           <h2>Recommended Next Steps:</h2>
           <ol>
@@ -188,7 +197,10 @@ const handler = async (req: Request): Promise<Response> => {
       });
 
       if (notificationEmailResult.error) {
-        console.error('Failed to send notification email:', notificationEmailResult.error);
+        console.error(
+          'Failed to send notification email:',
+          notificationEmailResult.error
+        );
       } else {
         console.log('Investment team notification sent successfully');
       }
@@ -197,17 +209,16 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Investment call request submitted successfully',
-        contact_id: contact.id
+        contact_id: contact.id,
       }),
       {
         status: 200,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
-
   } catch (error: any) {
     console.error('Error in submit-investor-call function:', error);
     return new Response(

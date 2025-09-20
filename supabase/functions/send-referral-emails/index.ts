@@ -1,10 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
+};
 
 interface EmailRequest {
   type: 'referral_bonus' | 'welcome_bonus';
@@ -24,44 +25,48 @@ serve(async (req) => {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    );
 
-    const { type, user_id, referrer_id, points }: EmailRequest = await req.json()
+    const { type, user_id, referrer_id, points }: EmailRequest =
+      await req.json();
 
-    console.log(`Processing ${type} email for user ${user_id}`)
+    console.log(`Processing ${type} email for user ${user_id}`);
 
     // Get user profile
     const { data: userProfile, error: userError } = await supabaseClient
       .from('profiles')
       .select('id, display_name')
       .eq('id', user_id)
-      .single()
+      .single();
 
     if (userError) {
-      console.error('Error fetching user profile:', userError)
-      throw userError
+      console.error('Error fetching user profile:', userError);
+      throw userError;
     }
 
     // Get user email from auth.users (service role required)
-    const { data: { user }, error: authError } = await supabaseClient.auth.admin.getUserById(user_id)
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseClient.auth.admin.getUserById(user_id);
+
     if (authError || !user?.email) {
-      console.error('Error fetching user email:', authError)
-      throw new Error('Could not fetch user email')
+      console.error('Error fetching user email:', authError);
+      throw new Error('Could not fetch user email');
     }
 
-    let emailHtml = ''
-    let subject = ''
+    let emailHtml = '';
+    let subject = '';
 
     if (type === 'referral_bonus' && referrer_id) {
-      // Get referrer profile  
+      // Get referrer profile
       const { data: referrerProfile } = await supabaseClient
         .from('profiles')
         .select('display_name')
         .eq('id', referrer_id)
-        .single()
+        .single();
 
-      subject = '🎉 Referral Bonus Earned at ODE Food Hall!'
+      subject = '🎉 Referral Bonus Earned at ODE Food Hall!';
       emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
@@ -100,9 +105,9 @@ serve(async (req) => {
             <p>Best regards,<br>The ODE Food Hall Team</p>
           </div>
         </div>
-      `
+      `;
     } else if (type === 'welcome_bonus') {
-      subject = '🎉 Welcome to ODE Food Hall - Bonus Points Included!'
+      subject = '🎉 Welcome to ODE Food Hall - Bonus Points Included!';
       emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center;">
@@ -143,19 +148,19 @@ serve(async (req) => {
             <p>Best regards,<br>The ODE Food Hall Team</p>
           </div>
         </div>
-      `
+      `;
     }
 
     // Send email using Resend API
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
-      throw new Error('RESEND_API_KEY not configured')
+      throw new Error('RESEND_API_KEY not configured');
     }
 
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -164,33 +169,33 @@ serve(async (req) => {
         subject: subject,
         html: emailHtml,
       }),
-    })
+    });
 
     if (!emailResponse.ok) {
-      const errorText = await emailResponse.text()
-      console.error('Resend API error:', errorText)
-      throw new Error(`Failed to send email: ${errorText}`)
+      const errorText = await emailResponse.text();
+      console.error('Resend API error:', errorText);
+      throw new Error(`Failed to send email: ${errorText}`);
     }
 
-    const emailResult = await emailResponse.json()
-    console.log('Email sent successfully:', emailResult)
+    const emailResult = await emailResponse.json();
+    console.log('Email sent successfully:', emailResult);
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Email sent successfully', id: emailResult.id }),
-      { 
+      JSON.stringify({
+        success: true,
+        message: 'Email sent successfully',
+        id: emailResult.id,
+      }),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200,
       }
-    )
-
+    );
   } catch (error) {
-    console.error('Error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
-    )
+    console.error('Error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
   }
-})
+});

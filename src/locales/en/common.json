@@ -1,0 +1,59 @@
+{
+  "welcome": "Welcome to ODPortal",
+  "hero_subtitle": "B2B and B2C API Demo Portal",
+  "hero_description": "Explore the capabilities of our commercial real estate management platform",
+  "test_api": "Test API",
+  "test_gamification": "Test Gamification",
+  "investor": {
+    "dashboard": {
+      "title": "Investor Dashboard",
+      "description": "Overview of your investment portfolio and key metrics.",
+      "heading": "Investor Dashboard",
+      "welcome_message": "Welcome to your investor dashboard!"
+    },
+    "portfolio": {
+      "title": "Investment Portfolio",
+      "description": "Manage your investments and track their performance.",
+      "heading": "My Investment Portfolio",
+      "welcome_message": "Here you can manage your investment portfolio."
+    },
+    "market_analysis": {
+      "title": "Market Analysis",
+      "description": "In-depth analysis of the commercial real estate market.",
+      "heading": "Real Estate Market Analysis",
+      "welcome_message": "Explore current market trends and analytics."
+    },
+    "settings": {
+      "title": "Investor Settings",
+      "description": "Manage your investor account settings.",
+      "heading": "Investor Account Settings",
+      "welcome_message": "Here you can change your investor account settings."
+    },
+    "dashboard": {
+      "portfolio_chart_title": "Portfolio Performance",
+      "days": "days",
+      "current_value": "Current Value",
+      "change": "Change",
+      "vs_last_month": "vs last month",
+      "total_value": "Total Value",
+      "monthly_return": "Monthly Return",
+      "risk_score": "Risk Score",
+      "risk_level": "Medium Risk",
+      "diversification": "Diversification",
+      "diversification_level": "Good Diversification",
+      "key_metrics": "Key Metrics",
+      "recent_transactions": "Recent Transactions",
+      "loading": "Loading data...",
+      "error_title": "Loading Error",
+      "retry": "Try Again",
+      "no_data": "No data to display",
+      "transaction_buy": "Buy",
+      "transaction_sell": "Sell",
+      "transaction_dividend": "Dividend"
+    }
+  },
+  "investor_dashboard": "Investor Dashboard",
+  "investor_portfolio": "Portfolio",
+  "investor_market_analysis": "Market Analysis",
+  "investor_settings": "Investor Settings"
+}

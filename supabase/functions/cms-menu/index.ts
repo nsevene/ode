@@ -1,24 +1,25 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
+};
 
 function csvToJson(csv: string) {
   const [head, ...rows] = csv.split('\n').filter(Boolean);
-  const headers = head.split(',').map(h=>h.trim());
-  return rows.map(line => {
+  const headers = head.split(',').map((h) => h.trim());
+  return rows.map((line) => {
     const cols = line.split(',');
-    const obj: Record<string,string> = {};
-    headers.forEach((h,i)=>obj[h]= (cols[i]||'').trim());
+    const obj: Record<string, string> = {};
+    headers.forEach((h, i) => (obj[h] = (cols[i] || '').trim()));
     return obj;
   });
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
@@ -31,23 +32,17 @@ serve(async (req) => {
     const text = await r.text();
     const items = csvToJson(text);
 
-    return new Response(
-      JSON.stringify({ items }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 's-maxage=120, stale-while-revalidate'
-        } 
-      }
-    )
+    return new Response(JSON.stringify({ items }), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Cache-Control': 's-maxage=120, stale-while-revalidate',
+      },
+    });
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    )
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
-})
+});

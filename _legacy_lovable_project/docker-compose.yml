@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  ode-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ode_food_hall_app
+    ports:
+      - '8080:80'
+    restart: unless-stopped
+    networks:
+      - ode-network
+
+networks:
+  ode-network:
+    driver: bridge

@@ -1,9 +1,10 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req: Request) => {
@@ -18,13 +19,13 @@ serve(async (req: Request) => {
     url: req.url,
     timestamp: new Date().toISOString(),
     userAgent: req.headers.get('user-agent'),
-    origin: req.headers.get('origin')
+    origin: req.headers.get('origin'),
   });
 
   try {
     const url = new URL(req.url);
     const action = url.pathname.split('/').pop();
-    
+
     if (req.method === 'POST') {
       switch (action) {
         case 'collect-stamp':
@@ -32,10 +33,13 @@ serve(async (req: Request) => {
         case 'verify-token':
           return await verifyToken(req);
         default:
-          return new Response('Not found', { status: 404, headers: corsHeaders });
+          return new Response('Not found', {
+            status: 404,
+            headers: corsHeaders,
+          });
       }
     }
-    
+
     if (req.method === 'GET') {
       switch (action) {
         case 'progress':
@@ -43,23 +47,25 @@ serve(async (req: Request) => {
         case 'leaderboard':
           return await getLeaderboard(req);
         default:
-          return new Response('Not found', { status: 404, headers: corsHeaders });
+          return new Response('Not found', {
+            status: 404,
+            headers: corsHeaders,
+          });
       }
     }
 
-    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
-
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders,
+    });
   } catch (error) {
     console.error('API Error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }), 
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
-})
+});
 
 async function collectStamp(req: Request) {
   try {
@@ -69,17 +75,28 @@ async function collectStamp(req: Request) {
     if (!guest_id || !zone_name) {
       return new Response(
         JSON.stringify({ error: 'guest_id and zone_name are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
     // Verify zone name is valid
-    const validZones = ['ferment', 'smoke', 'spice', 'umami', 'sweet-salt', 'sour-herb', 'zero-waste'];
+    const validZones = [
+      'ferment',
+      'smoke',
+      'spice',
+      'umami',
+      'sweet-salt',
+      'sour-herb',
+      'zero-waste',
+    ];
     if (!validZones.includes(zone_name)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid zone name' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Invalid zone name' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Use service role for database operations
@@ -94,31 +111,30 @@ async function collectStamp(req: Request) {
       p_zone_name: zone_name,
       p_source: source,
       p_nfc_tag_id: nfc_tag_id,
-      p_jwt_token: jwt_token
+      p_jwt_token: jwt_token,
     });
 
     if (error) {
       console.error('Database error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to process stamp' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
-    return new Response(
-      JSON.stringify(data),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
-
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Collect stamp error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Invalid request body' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 }
 
@@ -130,7 +146,10 @@ async function getProgress(req: Request) {
     if (!guest_id) {
       return new Response(
         JSON.stringify({ error: 'guest_id parameter is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
@@ -141,31 +160,27 @@ async function getProgress(req: Request) {
     );
 
     const { data, error } = await supabaseAdmin.rpc('get_guest_progress', {
-      p_guest_id: guest_id
+      p_guest_id: guest_id,
     });
 
     if (error) {
       console.error('Database error:', error);
-      return new Response(
-        JSON.stringify({ error: 'Failed to get progress' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Failed to get progress' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    return new Response(
-      JSON.stringify(data),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
-
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Get progress error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to get progress' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Failed to get progress' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 }
 
@@ -175,44 +190,46 @@ async function verifyToken(req: Request) {
     const { token } = body;
 
     if (!token) {
-      return new Response(
-        JSON.stringify({ error: 'token is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'token is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Here you would verify the JWT token
     // For now, we'll return a simple validation
     // In production, you should verify the JWT signature
-    
+
     try {
       // Simple token validation (replace with proper JWT verification)
       const decoded = atob(token.split('.')[1]);
       const payload = JSON.parse(decoded);
-      
+
       return new Response(
-        JSON.stringify({ 
-          valid: true, 
-          payload: payload 
+        JSON.stringify({
+          valid: true,
+          payload: payload,
         }),
-        { 
-          status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     } catch (error) {
       return new Response(
         JSON.stringify({ valid: false, error: 'Invalid token format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
-
   } catch (error) {
     console.error('Verify token error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Invalid request body' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Invalid request body' }), {
+      status: 400,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 }
 
@@ -235,23 +252,25 @@ async function getLeaderboard(req: Request) {
       console.error('Database error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to get leaderboard' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
-    return new Response(
-      JSON.stringify({ leaderboard: data }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
-
+    return new Response(JSON.stringify({ leaderboard: data }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Get leaderboard error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to get leaderboard' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 }

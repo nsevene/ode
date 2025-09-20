@@ -3,7 +3,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 interface DataProcessingRequest {
@@ -20,14 +21,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405, 
-      headers: corsHeaders 
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders,
     });
   }
 
   try {
-    const { action, data, dataType, userId }: DataProcessingRequest = await req.json();
+    const { action, data, dataType, userId }: DataProcessingRequest =
+      await req.json();
 
     // Initialize Supabase with service role key for secure operations
     const supabase = createClient(
@@ -39,16 +41,15 @@ const handler = async (req: Request): Promise<Response> => {
     // Get the requesting user
     const requestingUser = await getRequestingUser(req, supabase);
     if (!requestingUser) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          status: 401, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
-      );
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
-    console.log(`Processing ${action} for ${dataType} data by user: ${requestingUser.email}`);
+    console.log(
+      `Processing ${action} for ${dataType} data by user: ${requestingUser.email}`
+    );
 
     let result: any;
 
@@ -56,55 +57,52 @@ const handler = async (req: Request): Promise<Response> => {
       case 'validate':
         result = await validateData(data, dataType);
         break;
-      
+
       case 'sanitize':
         result = await sanitizeData(data, dataType);
         break;
-      
+
       case 'encrypt':
         result = await encryptData(data, dataType);
         break;
-      
+
       case 'decrypt':
         result = await decryptData(data, dataType);
         break;
-      
+
       case 'audit':
         result = await auditData(data, dataType, requestingUser.id, supabase);
         break;
-      
+
       default:
         return new Response(
-          JSON.stringify({ error: 'Invalid action. Supported actions: validate, sanitize, encrypt, decrypt, audit' }),
-          { 
-            status: 400, 
-            headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+          JSON.stringify({
+            error:
+              'Invalid action. Supported actions: validate, sanitize, encrypt, decrypt, audit',
+          }),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
           }
         );
     }
 
     // Log the data processing action
-    await supabase
-      .from('security_logs')
-      .insert({
-        violation_type: 'data_processing',
-        user_id: requestingUser.id,
-        details: {
-          action: action,
-          data_type: dataType,
-          timestamp: new Date().toISOString(),
-          success: result.success || false
-        }
-      });
+    await supabase.from('security_logs').insert({
+      violation_type: 'data_processing',
+      user_id: requestingUser.id,
+      details: {
+        action: action,
+        data_type: dataType,
+        timestamp: new Date().toISOString(),
+        success: result.success || false,
+      },
+    });
 
-    return new Response(
-      JSON.stringify(result),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
-      }
-    );
-
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
   } catch (error: any) {
     console.error('Error in secure-data-processing function:', error);
     return new Response(
@@ -125,8 +123,11 @@ async function getRequestingUser(req: Request, supabase: any) {
   }
 
   const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-  
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
   if (error || !user) {
     return null;
   }
@@ -138,33 +139,39 @@ async function getRequestingUser(req: Request, supabase: any) {
 async function validateData(data: any, dataType: string) {
   const validationRules = {
     booking: {
-      required: ['guest_name', 'guest_email', 'booking_date', 'time_slot', 'guest_count'],
+      required: [
+        'guest_name',
+        'guest_email',
+        'booking_date',
+        'time_slot',
+        'guest_count',
+      ],
       email: ['guest_email'],
       phone: ['guest_phone'],
       date: ['booking_date'],
-      number: ['guest_count']
+      number: ['guest_count'],
     },
     payment: {
       required: ['amount', 'currency', 'booking_id'],
       number: ['amount'],
-      string: ['currency', 'booking_id']
+      string: ['currency', 'booking_id'],
     },
     user: {
       required: ['email', 'full_name'],
       email: ['email'],
-      string: ['full_name', 'phone']
+      string: ['full_name', 'phone'],
     },
     tenant: {
       required: ['company_name', 'contact_person', 'email', 'business_type'],
       email: ['email'],
       phone: ['phone'],
-      number: ['space_area', 'floor_number']
+      number: ['space_area', 'floor_number'],
     },
     investor: {
       required: ['full_name', 'email', 'investment_amount'],
       email: ['email'],
-      number: ['investment_amount']
-    }
+      number: ['investment_amount'],
+    },
   };
 
   const rules = validationRules[dataType as keyof typeof validationRules];
@@ -220,7 +227,7 @@ async function validateData(data: any, dataType: string) {
   return {
     success: errors.length === 0,
     errors: errors,
-    validated_data: errors.length === 0 ? data : null
+    validated_data: errors.length === 0 ? data : null,
   };
 }
 
@@ -260,7 +267,7 @@ async function sanitizeData(data: any, dataType: string) {
 
   return {
     success: true,
-    sanitized_data: sanitizedData
+    sanitized_data: sanitizedData,
   };
 }
 
@@ -271,10 +278,11 @@ async function encryptData(data: any, dataType: string) {
     payment: ['card_number', 'cvv'],
     user: ['phone', 'address'],
     tenant: ['phone', 'description'],
-    investor: ['phone', 'address']
+    investor: ['phone', 'address'],
   };
 
-  const fields = sensitiveFields[dataType as keyof typeof sensitiveFields] || [];
+  const fields =
+    sensitiveFields[dataType as keyof typeof sensitiveFields] || [];
   const encryptedData = { ...data };
 
   for (const field of fields) {
@@ -286,7 +294,7 @@ async function encryptData(data: any, dataType: string) {
 
   return {
     success: true,
-    encrypted_data: encryptedData
+    encrypted_data: encryptedData,
   };
 }
 
@@ -297,10 +305,11 @@ async function decryptData(data: any, dataType: string) {
     payment: ['card_number', 'cvv'],
     user: ['phone', 'address'],
     tenant: ['phone', 'description'],
-    investor: ['phone', 'address']
+    investor: ['phone', 'address'],
   };
 
-  const fields = sensitiveFields[dataType as keyof typeof sensitiveFields] || [];
+  const fields =
+    sensitiveFields[dataType as keyof typeof sensitiveFields] || [];
   const decryptedData = { ...data };
 
   for (const field of fields) {
@@ -316,12 +325,17 @@ async function decryptData(data: any, dataType: string) {
 
   return {
     success: true,
-    decrypted_data: decryptedData
+    decrypted_data: decryptedData,
   };
 }
 
 // Audit data access and changes
-async function auditData(data: any, dataType: string, userId: string, supabase: any) {
+async function auditData(
+  data: any,
+  dataType: string,
+  userId: string,
+  supabase: any
+) {
   const auditRecord = {
     user_id: userId,
     data_type: dataType,
@@ -329,12 +343,10 @@ async function auditData(data: any, dataType: string, userId: string, supabase: 
     data_hash: await hashData(data),
     timestamp: new Date().toISOString(),
     ip_address: 'unknown', // Would be extracted from request headers
-    user_agent: 'unknown' // Would be extracted from request headers
+    user_agent: 'unknown', // Would be extracted from request headers
   };
 
-  const { error } = await supabase
-    .from('data_audit_logs')
-    .insert(auditRecord);
+  const { error } = await supabase.from('data_audit_logs').insert(auditRecord);
 
   if (error) {
     console.error('Error logging audit:', error);
@@ -343,7 +355,7 @@ async function auditData(data: any, dataType: string, userId: string, supabase: 
   return {
     success: true,
     audit_id: auditRecord.data_hash,
-    message: 'Data access audited'
+    message: 'Data access audited',
   };
 }
 
@@ -372,7 +384,7 @@ async function hashData(data: any): Promise<string> {
   const dataBuffer = encoder.encode(JSON.stringify(data));
   const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 serve(handler);

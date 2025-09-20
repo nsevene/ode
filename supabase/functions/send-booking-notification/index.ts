@@ -1,12 +1,13 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
+import { Resend } from 'npm:resend@2.0.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 interface BookingNotificationRequest {
@@ -17,30 +18,37 @@ interface BookingNotificationRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { bookingId, type, recipientEmail, recipientName }: BookingNotificationRequest = await req.json();
+    const {
+      bookingId,
+      type,
+      recipientEmail,
+      recipientName,
+    }: BookingNotificationRequest = await req.json();
 
     // Create Supabase client
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     // Fetch booking details
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
-      .select(`
+      .select(
+        `
         *,
         events:experience_type (
           title,
           description,
           venue
         )
-      `)
+      `
+      )
       .eq('id', bookingId)
       .single();
 
@@ -75,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email
     const emailResponse = await resend.emails.send({
-      from: "ODE Ubud Bazaar <booking@resend.dev>",
+      from: 'ODE Ubud Bazaar <booking@resend.dev>',
       to: [recipientEmail],
       subject: subject,
       html: htmlContent,
@@ -87,36 +95,38 @@ const handler = async (req: Request): Promise<Response> => {
       type: 'booking',
       title: subject,
       message: `Email уведомление отправлено на ${recipientEmail}`,
-      data: { 
+      data: {
         email_id: emailResponse.data?.id,
         booking_id: bookingId,
-        notification_type: type
-      }
+        notification_type: type,
+      },
     });
 
-    console.log("Booking email sent successfully:", emailResponse);
+    console.log('Booking email sent successfully:', emailResponse);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      emailId: emailResponse.data?.id 
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
-
-  } catch (error: any) {
-    console.error("Error in send-booking-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        success: true,
+        emailId: emailResponse.data?.id,
+      }),
       {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        status: 200,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
+  } catch (error: any) {
+    console.error('Error in send-booking-notification function:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
   }
 };
 
-function generateConfirmationEmail(booking: any, recipientName: string): string {
+function generateConfirmationEmail(
+  booking: any,
+  recipientName: string
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -173,12 +183,16 @@ function generateConfirmationEmail(booking: any, recipientName: string): string 
               <strong>Сумма:</strong>
               <span>${(booking.payment_amount / 100).toFixed(2)} USD</span>
             </div>
-            ${booking.special_requests ? `
+            ${
+              booking.special_requests
+                ? `
             <div class="detail-row">
               <strong>Особые пожелания:</strong>
               <span>${booking.special_requests}</span>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
           </div>
           
           <p><strong>Что дальше?</strong></p>
@@ -253,7 +267,10 @@ function generateReminderEmail(booking: any, recipientName: string): string {
   `;
 }
 
-function generateCancellationEmail(booking: any, recipientName: string): string {
+function generateCancellationEmail(
+  booking: any,
+  recipientName: string
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -285,7 +302,10 @@ function generateCancellationEmail(booking: any, recipientName: string): string 
   `;
 }
 
-function generateStatusUpdateEmail(booking: any, recipientName: string): string {
+function generateStatusUpdateEmail(
+  booking: any,
+  recipientName: string
+): string {
   return `
     <!DOCTYPE html>
     <html>

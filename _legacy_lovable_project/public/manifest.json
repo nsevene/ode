@@ -1,0 +1,33 @@
+{
+  "short_name": "ODE Food Hall",
+  "name": "ODE FOOD HALL GASTRO VILLAGE UBUD",
+  "description": "Experience global flavors in Bali's tropical paradise. Premium food hall in Ubud combining culinary excellence with jungle atmosphere.",
+  "icons": [
+    {
+      "src": "/lovable-uploads/3f00f862-daaa-4d2d-b462-b7347e9e5cdb.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/lovable-uploads/3f00f862-daaa-4d2d-b462-b7347e9e5cdb.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#8B1538",
+  "background_color": "#0A0908",
+  "orientation": "portrait-primary",
+  "categories": ["food", "restaurant", "dining", "bali", "ubud"],
+  "screenshots": [
+    {
+      "src": "/ode-hero-screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

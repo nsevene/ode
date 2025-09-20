@@ -1,294 +1,153 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { errorHandler, displayError } from '@/lib/error-handling';
+import { create } from 'zustand'
+import { supabase } from '../lib/supabase'
+import { UserRole } from '../types/auth'
 
-interface AuthState {
-  user: User | null;
-  session: Session | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  role: string | null;
-  permissions: string[];
+interface User {
+  id: string
+  email: string
+  role: UserRole
+  created_at?: string
+  updated_at?: string
 }
 
-interface AuthActions {
-  setUser: (user: User | null) => void;
-  setSession: (session: Session | null) => void;
-  setLoading: (loading: boolean) => void;
-  setRole: (role: string | null) => void;
-  setPermissions: (permissions: string[]) => void;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signOut: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  checkRole: () => Promise<void>;
-  hasPermission: (permission: string) => boolean;
-  hasRole: (role: string) => boolean;
-  reset: () => void;
+interface AuthStoreState {
+  user: User | null
+  role: UserRole
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+  login: (email: string, password: string) => Promise<boolean>
+  register: (email: string, password: string, role: UserRole) => Promise<boolean>
+  logout: () => Promise<void>
+  setUser: (user: User | null) => void
+  setRole: (role: UserRole) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  checkAuth: () => Promise<void>
 }
 
-type AuthStore = AuthState & AuthActions;
-
-const initialState: AuthState = {
+export const useAuthStore = create<AuthStoreState>((set, get) => ({
   user: null,
-  session: null,
+  role: UserRole.Public,
   isAuthenticated: false,
-  loading: true,
-  role: null,
-  permissions: [],
-};
+  isLoading: false,
+  error: null,
 
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set, get) => ({
-      ...initialState,
-
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+  login: async (email: string, password: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      // Demo mode - simulate login
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
       
-      setSession: (session) => set({ session }),
+      // Mock user data for demo
+      const mockUser = {
+        id: 'demo-user-id',
+        email: email,
+        role: email.includes('admin') ? UserRole.Admin : 
+              email.includes('tenant') ? UserRole.Tenant : 
+              email.includes('investor') ? UserRole.Investor : UserRole.Public,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
       
-      setLoading: (loading) => set({ loading }),
-      
-      setRole: (role) => set({ role }),
-      
-      setPermissions: (permissions) => set({ permissions }),
-
-      signIn: async (email, password) => {
-        try {
-          set({ loading: true });
-          
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (error) {
-            const appError = errorHandler.handleError(error);
-            displayError(appError);
-            return { success: false, error: appError.message };
-          }
-
-          set({ 
-            user: data.user, 
-            session: data.session, 
-            isAuthenticated: true,
-            loading: false 
-          });
-
-          // Check user role after successful login
-          await get().checkRole();
-
-          return { success: true };
-        } catch (error) {
-          const appError = errorHandler.handleError(error);
-          displayError(appError);
-          set({ loading: false });
-          return { success: false, error: appError.message };
-        }
-      },
-
-      signUp: async (email, password) => {
-        try {
-          set({ loading: true });
-          
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-          });
-
-          if (error) {
-            const appError = errorHandler.handleError(error);
-            displayError(appError);
-            return { success: false, error: appError.message };
-          }
-
-          set({ 
-            user: data.user, 
-            session: data.session, 
-            isAuthenticated: !!data.user,
-            loading: false 
-          });
-
-          return { success: true };
-        } catch (error) {
-          const appError = errorHandler.handleError(error);
-          displayError(appError);
-          set({ loading: false });
-          return { success: false, error: appError.message };
-        }
-      },
-
-      signOut: async () => {
-        try {
-          set({ loading: true });
-          
-          const { error } = await supabase.auth.signOut();
-          
-          if (error) {
-            const appError = errorHandler.handleError(error);
-            displayError(appError);
-            return;
-          }
-
-          set({
-            user: null,
-            session: null,
-            isAuthenticated: false,
-            loading: false,
-            role: null,
-            permissions: [],
-          });
-        } catch (error) {
-          const appError = errorHandler.handleError(error);
-          displayError(appError);
-          set({ loading: false });
-        }
-      },
-
-      refreshSession: async () => {
-        try {
-          const { data, error } = await supabase.auth.refreshSession();
-          
-          if (error) {
-            console.error('Session refresh error:', error);
-            return;
-          }
-
-          set({ 
-            session: data.session,
-            user: data.session?.user || null,
-            isAuthenticated: !!data.session?.user
-          });
-        } catch (error) {
-          console.error('Session refresh error:', error);
-        }
-      },
-
-      checkRole: async () => {
-        try {
-          const { user } = get();
-          if (!user) return;
-
-          const { data, error } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', user.id)
-            .single();
-
-          if (error) {
-            console.error('Role check error:', error);
-            return;
-          }
-
-          const role = data?.role || 'guest';
-          set({ role });
-
-          // Set permissions based on role
-          const permissions = getPermissionsForRole(role);
-          set({ permissions });
-        } catch (error) {
-          console.error('Role check error:', error);
-        }
-      },
-
-      hasPermission: (permission) => {
-        const { permissions } = get();
-        return permissions.includes(permission);
-      },
-
-      hasRole: (role) => {
-        const { role: userRole } = get();
-        return userRole === role;
-      },
-
-
-      reset: () => {
-        set(initialState);
-      },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({
-        user: state.user,
-        session: state.session,
-        isAuthenticated: state.isAuthenticated,
-        role: state.role,
-        permissions: state.permissions,
-      }),
+      set({ 
+        user: mockUser,
+        role: mockUser.role,
+        isAuthenticated: true,
+        isLoading: false 
+      })
+      return true
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Login failed', isLoading: false })
+      return false
     }
-  )
-);
+  },
 
-// Helper function to get permissions for a role
-function getPermissionsForRole(role: string): string[] {
-  const rolePermissions: Record<string, string[]> = {
-    admin: [
-      'read:all',
-      'write:all',
-      'delete:all',
-      'manage:users',
-      'manage:bookings',
-      'manage:orders',
-      'manage:menu',
-      'manage:events',
-      'manage:analytics',
-      'manage:settings',
-    ],
-    tenant: [
-      'read:own',
-      'write:own',
-      'manage:own_bookings',
-      'manage:own_orders',
-      'manage:own_menu',
-      'manage:own_analytics',
-    ],
-    investor: [
-      'read:analytics',
-      'read:financials',
-      'read:reports',
-    ],
-    internal: [
-      'read:all',
-      'write:bookings',
-      'write:orders',
-      'manage:events',
-    ],
-    guest: [
-      'read:public',
-      'create:booking',
-      'create:order',
-    ],
-  };
+  register: async (email: string, password: string, role: UserRole) => {
+    set({ isLoading: true, error: null })
+    try {
+      // Demo mode - simulate registration
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      
+      // Mock user data for demo
+      const mockUser = {
+        id: 'demo-user-id',
+        email: email,
+        role: role,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      
+      set({ 
+        user: mockUser,
+        role: role,
+        isAuthenticated: true,
+        isLoading: false 
+      })
+      return true
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Registration failed', isLoading: false })
+      return false
+    }
+  },
 
-  return rolePermissions[role] || rolePermissions.guest;
-}
+  logout: async () => {
+    set({ isLoading: true })
+    try {
+      // Demo mode - simulate logout
+      await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API call
+      
+      set({ 
+        user: null, 
+        role: UserRole.Public,
+        isAuthenticated: false,
+        isLoading: false, 
+        error: null 
+      })
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Logout failed', isLoading: false })
+    }
+  },
 
-// Selectors for better performance
-export const useAuth = () => useAuthStore((state) => ({
-  user: state.user,
-  session: state.session,
-  isAuthenticated: state.isAuthenticated,
-  loading: state.loading,
-  role: state.role,
-  permissions: state.permissions,
-}));
+  checkAuth: async () => {
+    set({ isLoading: true })
+    try {
+      // Demo mode - check if user is already logged in
+      const existingUser = get().user
+      
+      if (existingUser) {
+        set({ 
+          user: existingUser,
+          role: existingUser.role,
+          isAuthenticated: true,
+          isLoading: false 
+        })
+      } else {
+        set({ 
+          user: null, 
+          role: UserRole.Public,
+          isAuthenticated: false,
+          isLoading: false 
+        })
+      }
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Auth check failed', 
+        isLoading: false 
+      })
+    }
+  },
 
-export const useAuthActions = () => useAuthStore((state) => ({
-  signIn: state.signIn,
-  signUp: state.signUp,
-  signOut: state.signOut,
-  refreshSession: state.refreshSession,
-  checkRole: state.checkRole,
-  hasPermission: state.hasPermission,
-  hasRole: state.hasRole,
-  reset: state.reset,
-}));
-
-export const useAuthPermissions = () => useAuthStore((state) => ({
-  hasPermission: state.hasPermission,
-  hasRole: state.hasRole,
-  permissions: state.permissions,
-  role: state.role,
-}));
+  setUser: (user: User | null) => {
+    set({ user, isAuthenticated: !!user })
+    if (user) {
+      set({ role: user.role })
+    } else {
+      set({ role: UserRole.Public })
+    }
+  },
+  
+  setRole: (role: UserRole) => set({ role }),
+  setLoading: (loading: boolean) => set({ isLoading: loading }),
+  setError: (error: string | null) => set({ error }),
+}))
