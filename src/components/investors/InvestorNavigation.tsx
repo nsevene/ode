@@ -31,7 +31,7 @@ const InvestorNavigation: React.FC = () => {
       description: 'Рыночная аналитика'
     },
     {
-      path: '/dataroom',
+      path: '/investors/data-room',
       icon: FaDatabase,
       label: 'Data Room',
       description: 'Документы и данные'
@@ -58,7 +58,7 @@ const InvestorNavigation: React.FC = () => {
       <ul className="ode-investor-nav-list">
         {navItems.map((item) => {
           const IconComponent = item.icon
-          const isActive = location.pathname === item.path
+          const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
           
           return (
             <li key={item.path}>
