@@ -163,8 +163,7 @@ const ApplicationsPage: React.FC = () => {
           <div className="ode-dashboard-content">
             {/* Header */}
             <div className="ode-dashboard-header">
-            <div>
-              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Управление заявками</h1>
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Управление заявками</h1>
               <p className="ode-text-gray">Просмотр и обработка заявок от арендаторов и инвесторов</p>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -176,11 +175,8 @@ const ApplicationsPage: React.FC = () => {
                 Экспорт
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="ode-container" style={{ padding: '32px 0' }}>
+            <div style={{ marginTop: '32px' }}>
         {/* Filters */}
         <div className="ode-card ode-mb-4">
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -331,6 +327,9 @@ const ApplicationsPage: React.FC = () => {
               <p className="ode-text-gray">Заявки не найдены</p>
             </div>
           )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
