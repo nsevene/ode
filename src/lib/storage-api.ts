@@ -1,5 +1,5 @@
-// Storage API for file upload and management
-// Compatible with PostgreSQL backend
+// Secure Storage API for file upload and management
+// Uses JWT authentication instead of client-trusted userEmail
 
 export interface StorageBucket {
   id: string;
@@ -13,19 +13,6 @@ export interface StorageBucket {
   allowed_roles: string[];
 }
 
-export interface FilePermission {
-  id: string;
-  file_path: string;
-  bucket_name: string;
-  user_id?: string;
-  user_role?: string;
-  can_read: boolean;
-  can_write: boolean;
-  can_delete: boolean;
-  can_share: boolean;
-  expires_at?: string;
-}
-
 export interface FileValidationResult {
   valid: boolean;
   error_message: string;
@@ -37,9 +24,12 @@ export interface FileUploadResult {
   file_path?: string;
   file_url?: string;
   error?: string;
+  original_name?: string;
+  size?: number;
+  mime_type?: string;
 }
 
-export class StorageAPI {
+export class SecureStorageAPI {
   private baseUrl: string;
 
   constructor(baseUrl: string = '/api/storage') {
@@ -47,13 +37,50 @@ export class StorageAPI {
   }
 
   /**
+   * Get authorization headers with JWT token
+   */
+  private getAuthHeaders(): HeadersInit {
+    const token = this.getAccessToken();
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': token ? `Bearer ${token}` : ''
+    };
+  }
+
+  /**
+   * Get access token from auth store or localStorage
+   */
+  private getAccessToken(): string | null {
+    // Try to get from auth store if available
+    if (typeof window !== 'undefined') {
+      const authData = localStorage.getItem('auth-storage');
+      if (authData) {
+        try {
+          const parsed = JSON.parse(authData);
+          return parsed.state?.accessToken || null;
+        } catch (e) {
+          console.warn('Failed to parse auth data from localStorage');
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Get all available storage buckets
    */
   async getBuckets(): Promise<StorageBucket[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/buckets`);
-      if (!response.ok) throw new Error('Failed to fetch buckets');
-      return await response.json();
+      const response = await fetch(`${this.baseUrl}/buckets`, {
+        headers: this.getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch buckets');
+      }
+      
+      const result = await response.json();
+      return result.buckets || [];
     } catch (error) {
       console.error('Error fetching buckets:', error);
       return [];
@@ -67,25 +94,25 @@ export class StorageAPI {
     bucketName: string,
     filename: string,
     fileSize: number,
-    mimeType: string,
-    userEmail: string
+    mimeType: string
   ): Promise<FileValidationResult> {
     try {
       const response = await fetch(`${this.baseUrl}/validate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getAuthHeaders(),
         body: JSON.stringify({
           bucket_name: bucketName,
           filename,
           file_size: fileSize,
-          mime_type: mimeType,
-          user_email: userEmail,
+          mime_type: mimeType
         }),
       });
 
-      if (!response.ok) throw new Error('Validation failed');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error_message || 'Validation failed');
+      }
+      
       return await response.json();
     } catch (error) {
       return {
@@ -96,12 +123,11 @@ export class StorageAPI {
   }
 
   /**
-   * Upload file to storage bucket
+   * Upload file to storage bucket (JWT secured)
    */
   async uploadFile(
     bucketName: string,
     file: File,
-    userEmail: string,
     entityId?: string,
     entityType?: string
   ): Promise<FileUploadResult> {
@@ -111,8 +137,7 @@ export class StorageAPI {
         bucketName,
         file.name,
         file.size,
-        file.type,
-        userEmail
+        file.type
       );
 
       if (!validation.valid) {
@@ -126,26 +151,25 @@ export class StorageAPI {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('bucket_name', bucketName);
-      formData.append('user_email', userEmail);
       if (entityId) formData.append('entity_id', entityId);
       if (entityType) formData.append('entity_type', entityType);
 
+      const token = this.getAccessToken();
       const response = await fetch(`${this.baseUrl}/upload`, {
         method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+          // Don't set Content-Type for FormData - browser will set it with boundary
+        },
         body: formData,
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
       }
 
-      const result = await response.json();
-      return {
-        success: true,
-        file_path: result.file_path,
-        file_url: result.file_url,
-      };
+      return await response.json();
     } catch (error) {
       return {
         success: false,
@@ -155,30 +179,26 @@ export class StorageAPI {
   }
 
   /**
-   * Delete file from storage
+   * Delete file from storage (JWT secured)
    */
   async deleteFile(
-    filePath: string,
-    userEmail: string
+    filePath: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/delete`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getAuthHeaders(),
         body: JSON.stringify({
-          file_path: filePath,
-          user_email: userEmail,
+          file_path: filePath
         }),
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
+        const error = await response.json();
+        throw new Error(error.error || 'Delete failed');
       }
 
-      return { success: true };
+      return await response.json();
     } catch (error) {
       return {
         success: false,
@@ -188,29 +208,25 @@ export class StorageAPI {
   }
 
   /**
-   * Get signed URL for private file access
+   * Get signed URL for private file access (JWT secured)
    */
   async getSignedUrl(
     filePath: string,
-    userEmail: string,
     expiresIn: number = 3600 // 1 hour default
   ): Promise<{ url?: string; error?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/signed-url`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: this.getAuthHeaders(),
         body: JSON.stringify({
           file_path: filePath,
-          user_email: userEmail,
           expires_in: expiresIn,
         }),
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate signed URL');
       }
 
       const result = await response.json();
@@ -219,20 +235,6 @@ export class StorageAPI {
       return {
         error: error instanceof Error ? error.message : 'Failed to generate signed URL',
       };
-    }
-  }
-
-  /**
-   * Get file metadata
-   */
-  async getFileInfo(filePath: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/info?path=${encodeURIComponent(filePath)}`);
-      if (!response.ok) throw new Error('File not found');
-      return await response.json();
-    } catch (error) {
-      console.error('Error getting file info:', error);
-      return null;
     }
   }
 
@@ -260,20 +262,39 @@ export class StorageAPI {
     if (mimeType.includes('powerpoint')) return '📽️';
     return '📎';
   }
+
+  /**
+   * Helper to check if user can upload to bucket based on current auth state
+   */
+  async canUploadToBucket(bucketName: string): Promise<boolean> {
+    try {
+      const buckets = await this.getBuckets();
+      const bucket = buckets.find(b => b.id === bucketName);
+      return !!bucket; // If we can see the bucket, we can likely upload to it
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
-// Export singleton instance
-export const storageAPI = new StorageAPI();
+// Export singleton instance with new secure API
+export const storageAPI = new SecureStorageAPI();
 
-// Export helper functions
-export const uploadToDocuments = (file: File, userEmail: string, entityId?: string) =>
-  storageAPI.uploadFile('documents', file, userEmail, entityId);
+// Export secure helper functions (NO MORE userEmail parameter!)
+export const uploadToDocuments = (file: File, entityId?: string) =>
+  storageAPI.uploadFile('documents', file, entityId);
 
-export const uploadPresentation = (file: File, userEmail: string, applicationId?: string) =>
-  storageAPI.uploadFile('presentations', file, userEmail, applicationId, 'application');
+export const uploadPresentation = (file: File, applicationId?: string) =>
+  storageAPI.uploadFile('presentations', file, applicationId, 'application');
 
-export const uploadPropertyImage = (file: File, userEmail: string, propertyId?: string) =>
-  storageAPI.uploadFile('images', file, userEmail, propertyId, 'property');
+export const uploadPropertyImage = (file: File, propertyId?: string) =>
+  storageAPI.uploadFile('images', file, propertyId, 'property');
 
-export const uploadInvestmentReport = (file: File, userEmail: string, investmentId?: string) =>
-  storageAPI.uploadFile('reports', file, userEmail, investmentId, 'investment');
+export const uploadInvestmentReport = (file: File, investmentId?: string) =>
+  storageAPI.uploadFile('reports', file, investmentId, 'investment');
+
+export const uploadApplicationDocument = (file: File, applicationId?: string) =>
+  storageAPI.uploadFile('applications', file, applicationId, 'application');
+
+// Export types for external use
+export type { StorageBucket, FileValidationResult, FileUploadResult };
