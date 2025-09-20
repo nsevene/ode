@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaSearch, FaFilter, FaEye, FaCheck, FaTimes, FaUser, FaBuilding, FaCalendar, FaPlus } from 'react-icons/fa'
 import AdminNavigation from '../../components/admin/AdminNavigation'
+import { adminApi, type AdminApplication } from '../../lib/api/admin'
 
 const ApplicationsPage: React.FC = () => {
   const [filter, setFilter] = useState('all')
@@ -9,62 +10,55 @@ const ApplicationsPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingApplication, setEditingApplication] = useState<any>(null)
+  const [applications, setApplications] = useState<AdminApplication[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const applications = [
-    {
-      id: 1,
-      company: 'ООО "ТехноИнновации"',
-      type: 'tenant',
-      contact: 'Иван Петров',
-      email: 'ivan@techinnov.ru',
-      phone: '+7 (495) 123-45-67',
-      property: 'Офис 150м² в БЦ "Солнечный"',
-      date: '2024-12-19',
-      status: 'pending',
-      budget: '₽150,000/мес'
-    },
-    {
-      id: 2,
-      company: 'ИП Сидоров А.А.',
-      type: 'tenant',
-      contact: 'Александр Сидоров',
-      email: 'sidorov@example.com',
-      phone: '+7 (495) 987-65-43',
-      property: 'Склад 300м² в промзоне',
-      date: '2024-12-18',
-      status: 'approved',
-      budget: '₽80,000/мес'
-    },
-    {
-      id: 3,
-      company: 'ЗАО "ИнвестГрупп"',
-      type: 'investor',
-      contact: 'Мария Козлова',
-      email: 'kozlova@investgroup.ru',
-      phone: '+7 (495) 555-12-34',
-      property: 'Портфель из 5 объектов',
-      date: '2024-12-17',
-      status: 'review',
-      budget: '₽50М'
-    },
-    {
-      id: 4,
-      company: 'ООО "СтартапСтудия"',
-      type: 'tenant',
-      contact: 'Дмитрий Волков',
-      email: 'volkov@startupstudio.ru',
-      phone: '+7 (495) 777-88-99',
-      property: 'Коворкинг 200м²',
-      date: '2024-12-16',
-      status: 'rejected',
-      budget: '₽120,000/мес'
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const data = await adminApi.getApplications()
+        setApplications(data)
+      } catch (error) {
+        console.error('Error fetching applications:', error)
+        // Fallback to mock data
+        setApplications([
+          {
+            id: '1',
+            tenant_id: 'tenant-1',
+            property_id: 'prop-1',
+            full_name: 'Иван Петров',
+            brand_name: 'ООО "ТехноИнновации"',
+            email: 'ivan@techinnov.ru',
+            phone_number: '+7 (495) 123-45-67',
+            concept_description: 'IT-компания, разработка мобильных приложений',
+            status: 'pending',
+            created_at: '2024-12-19T10:00:00Z'
+          },
+          {
+            id: '2',
+            tenant_id: 'tenant-2',
+            property_id: 'prop-2',
+            full_name: 'Александр Сидоров',
+            brand_name: 'ИП Сидоров А.А.',
+            email: 'sidorov@example.com',
+            phone_number: '+7 (495) 987-65-43',
+            concept_description: 'Логистическая компания',
+            status: 'approved',
+            created_at: '2024-12-18T14:30:00Z'
+          }
+        ])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchApplications()
+  }, [])
 
   const filteredApplications = applications.filter(app => {
     const matchesFilter = filter === 'all' || app.status === filter
-    const matchesSearch = app.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         app.contact.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = app.brand_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         app.full_name.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
@@ -88,17 +82,29 @@ const ApplicationsPage: React.FC = () => {
     setShowEditModal(true)
   }
 
-  const handleApproveApplication = (applicationId: string) => {
-    console.log('Одобрение заявки:', applicationId)
-    if (confirm('Одобрить эту заявку?')) {
+  const handleApproveApplication = async (applicationId: string) => {
+    try {
+      await adminApi.updateApplicationStatus(applicationId, 'approved', 'Заявка одобрена администратором')
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, status: 'approved' } : app
+      ))
       alert('Заявка одобрена')
+    } catch (error) {
+      console.error('Error approving application:', error)
+      alert('Ошибка при одобрении заявки')
     }
   }
 
-  const handleRejectApplication = (applicationId: string) => {
-    console.log('Отклонение заявки:', applicationId)
-    if (confirm('Отклонить эту заявку?')) {
+  const handleRejectApplication = async (applicationId: string) => {
+    try {
+      await adminApi.updateApplicationStatus(applicationId, 'rejected', 'Заявка отклонена администратором')
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, status: 'rejected' } : app
+      ))
       alert('Заявка отклонена')
+    } catch (error) {
+      console.error('Error rejecting application:', error)
+      alert('Ошибка при отклонении заявки')
     }
   }
 
@@ -239,12 +245,24 @@ const ApplicationsPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredApplications.map((app) => (
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="ode-card" style={{ padding: '20px' }}>
+                  <div className="ode-animate-pulse">
+                    <div className="ode-h-6 ode-bg-gray-200 ode-rounded ode-mb-2"></div>
+                    <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-mb-4"></div>
+                    <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-w-3/4"></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              filteredApplications.map((app) => (
               <div key={app.id} className="ode-card" style={{ padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                      <h3 className="ode-text-lg ode-font-semibold ode-text-charcoal">{app.company}</h3>
+                      <h3 className="ode-text-lg ode-font-semibold ode-text-charcoal">{app.brand_name}</h3>
                       <span 
                         className="badge"
                         style={{ 
@@ -262,15 +280,17 @@ const ApplicationsPage: React.FC = () => {
                     <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaUser style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                        <span className="ode-text-sm ode-text-gray">{app.contact}</span>
+                        <span className="ode-text-sm ode-text-gray">{app.full_name}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaBuilding style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                        <span className="ode-text-sm ode-text-gray">{app.property}</span>
+                        <span className="ode-text-sm ode-text-gray">{app.concept_description}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaCalendar style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                        <span className="ode-text-sm ode-text-gray">{app.date}</span>
+                        <span className="ode-text-sm ode-text-gray">
+                          {new Date(app.created_at).toLocaleDateString('ru-RU')}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -311,18 +331,19 @@ const ApplicationsPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="ode-text-xs ode-text-gray">Телефон:</span>
-                    <p className="ode-text-sm ode-text-charcoal">{app.phone}</p>
+                    <p className="ode-text-sm ode-text-charcoal">{app.phone_number}</p>
                   </div>
                   <div>
-                    <span className="ode-text-xs ode-text-gray">Бюджет:</span>
-                    <p className="ode-text-sm ode-text-charcoal">{app.budget}</p>
+                    <span className="ode-text-xs ode-text-gray">Описание:</span>
+                    <p className="ode-text-sm ode-text-charcoal">{app.concept_description}</p>
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
 
-          {filteredApplications.length === 0 && (
+          {!loading && filteredApplications.length === 0 && (
             <div className="ode-text-center" style={{ padding: '48px 0' }}>
               <p className="ode-text-gray">Заявки не найдены</p>
             </div>

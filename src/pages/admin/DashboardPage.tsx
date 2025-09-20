@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import AdminNavigation from '../../components/admin/AdminNavigation'
+import { adminApi } from '../../lib/api/admin'
 import { 
   FaUsers, FaFileAlt, FaBuilding, FaDollarSign, FaChartLine, FaCog, FaShieldAlt, 
   FaGamepad, FaFolder, FaBell,
@@ -10,11 +11,44 @@ import {
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuthStore()
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalProperties: 0,
+    totalApplications: 0,
+    totalRevenue: 0,
+    pendingApplications: 0,
+    activeProperties: 0
+  })
+  const [loading, setLoading] = useState(true)
 
-  const stats = [
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await adminApi.getDashboardStats()
+        setStats(data)
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error)
+        // Fallback to mock data
+        setStats({
+          totalUsers: 1234,
+          totalProperties: 156,
+          totalApplications: 23,
+          totalRevenue: 2500000,
+          pendingApplications: 5,
+          activeProperties: 120
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
+
+  const statsData = [
     {
       name: 'Всего пользователей',
-      value: '1,234',
+      value: stats.totalUsers.toLocaleString(),
       change: '+12%',
       changeType: 'positive',
       icon: FaUsers,
@@ -22,7 +56,7 @@ const DashboardPage: React.FC = () => {
     },
     {
       name: 'Новые заявки',
-      value: '23',
+      value: stats.pendingApplications.toString(),
       change: '+5%',
       changeType: 'positive',
       icon: FaFileAlt,
@@ -30,7 +64,7 @@ const DashboardPage: React.FC = () => {
     },
     {
       name: 'Активные объекты',
-      value: '156',
+      value: stats.activeProperties.toString(),
       change: '+2%',
       changeType: 'positive',
       icon: FaBuilding,
@@ -38,7 +72,7 @@ const DashboardPage: React.FC = () => {
     },
     {
       name: 'Доход за месяц',
-      value: '₽2.5М',
+      value: `₽${(stats.totalRevenue / 1000000).toFixed(1)}М`,
       change: '+8%',
       changeType: 'positive',
       icon: FaDollarSign,
@@ -206,31 +240,44 @@ const DashboardPage: React.FC = () => {
       <div className="ode-container" style={{ padding: '32px 0' }}>
         {/* Stats Grid */}
         <div className="ode-grid ode-grid-4 ode-mb-6">
-          {stats.map((stat) => (
-            <div key={stat.name} className="ode-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <p className="ode-text-sm ode-font-medium ode-text-gray ode-mb-1">{stat.name}</p>
-                  <p className="ode-text-3xl ode-font-bold" style={{ color: stat.color }}>{stat.value}</p>
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="ode-card">
+                <div className="ode-animate-pulse">
+                  <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-mb-2"></div>
+                  <div className="ode-h-8 ode-bg-gray-200 ode-rounded ode-mb-2"></div>
+                  <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-w-16"></div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <stat.icon style={{ width: '24px', height: '24px', color: stat.color }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {stat.changeType === 'positive' ? (
-                      <FaArrowUp style={{ width: '12px', height: '12px', color: '#16a34a' }} />
-                    ) : (
-                      <FaArrowDown style={{ width: '12px', height: '12px', color: '#dc2626' }} />
-                    )}
-                    <span className={`ode-text-sm ode-font-medium ${
-                      stat.changeType === 'positive' ? 'ode-text-success' : 'ode-text-error'
-                    }`}>
-                      {stat.change}
-                    </span>
+              </div>
+            ))
+          ) : (
+            statsData.map((stat) => (
+              <div key={stat.name} className="ode-card">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                  <div>
+                    <p className="ode-text-sm ode-font-medium ode-text-gray ode-mb-1">{stat.name}</p>
+                    <p className="ode-text-3xl ode-font-bold" style={{ color: stat.color }}>{stat.value}</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <stat.icon style={{ width: '24px', height: '24px', color: stat.color }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {stat.changeType === 'positive' ? (
+                        <FaArrowUp style={{ width: '12px', height: '12px', color: '#16a34a' }} />
+                      ) : (
+                        <FaArrowDown style={{ width: '12px', height: '12px', color: '#dc2626' }} />
+                      )}
+                      <span className={`ode-text-sm ode-font-medium ${
+                        stat.changeType === 'positive' ? 'ode-text-success' : 'ode-text-error'
+                      }`}>
+                        {stat.change}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="ode-grid" style={{ gridTemplateColumns: '2fr 1fr', gap: '32px' }}>

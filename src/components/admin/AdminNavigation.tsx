@@ -38,6 +38,31 @@ const AdminNavigation: React.FC = () => {
       icon: FaFileAlt,
     },
     {
+      path: '/admin/tenant-applications',
+      labelKey: 'admin.nav.tenant_applications',
+      icon: FaFileAlt,
+    },
+    {
+      path: '/admin/lease-management',
+      labelKey: 'admin.nav.lease_management',
+      icon: FaFileAlt,
+    },
+    {
+      path: '/admin/property-inventory',
+      labelKey: 'admin.nav.property_inventory',
+      icon: FaBuilding,
+    },
+    {
+      path: '/admin/audit-logs',
+      labelKey: 'admin.nav.audit_logs',
+      icon: FaFileAlt,
+    },
+    {
+      path: '/admin/user-roles',
+      labelKey: 'admin.nav.user_roles',
+      icon: FaUsers,
+    },
+    {
       path: '/admin/users',
       labelKey: 'admin.nav.users',
       icon: FaUsers,

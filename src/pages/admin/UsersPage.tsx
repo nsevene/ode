@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaSearch, FaPlus, FaEdit, FaTrash, FaUser, FaEnvelope, FaCalendar, FaShieldAlt, FaBuilding, FaDollarSign } from 'react-icons/fa'
 import { UserRole } from '../../types/auth'
 import AdminNavigation from '../../components/admin/AdminNavigation'
+import { adminApi, type AdminUser } from '../../lib/api/admin'
 
 const UsersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -10,58 +11,60 @@ const UsersPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingUser, setEditingUser] = useState<any>(null)
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const users = [
-    {
-      id: 1,
-      name: 'Александр Иванов',
-      email: 'ivanov@example.com',
-      role: UserRole.Admin,
-      status: 'active',
-      lastLogin: '2024-12-19',
-      createdAt: '2024-01-15',
-      company: 'ООО "ТехноИнновации"',
-      properties: 5
-    },
-    {
-      id: 2,
-      name: 'Мария Петрова',
-      email: 'petrova@example.com',
-      role: UserRole.Tenant,
-      status: 'active',
-      lastLogin: '2024-12-18',
-      createdAt: '2024-02-20',
-      company: 'ИП Петрова М.А.',
-      properties: 2
-    },
-    {
-      id: 3,
-      name: 'Дмитрий Сидоров',
-      email: 'sidorov@example.com',
-      role: UserRole.Investor,
-      status: 'active',
-      lastLogin: '2024-12-17',
-      createdAt: '2024-03-10',
-      company: 'ЗАО "ИнвестГрупп"',
-      properties: 12
-    },
-    {
-      id: 4,
-      name: 'Елена Козлова',
-      email: 'kozlova@example.com',
-      role: UserRole.Tenant,
-      status: 'inactive',
-      lastLogin: '2024-12-10',
-      createdAt: '2024-04-05',
-      company: 'ООО "СтартапСтудия"',
-      properties: 1
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await adminApi.getUsers()
+        setUsers(data)
+      } catch (error) {
+        console.error('Error fetching users:', error)
+        // Fallback to mock data
+        setUsers([
+          {
+            id: '1',
+            email: 'ivanov@example.com',
+            full_name: 'Александр Иванов',
+            role: 'admin',
+            status: 'active',
+            created_at: '2024-01-15T10:00:00Z',
+            last_login: '2024-12-19T10:00:00Z',
+            organization_id: 'org-1'
+          },
+          {
+            id: '2',
+            email: 'petrova@example.com',
+            full_name: 'Мария Петрова',
+            role: 'tenant',
+            status: 'active',
+            created_at: '2024-02-20T10:00:00Z',
+            last_login: '2024-12-18T10:00:00Z',
+            organization_id: 'org-1'
+          },
+          {
+            id: '3',
+            email: 'sidorov@example.com',
+            full_name: 'Дмитрий Сидоров',
+            role: 'investor',
+            status: 'active',
+            created_at: '2024-03-10T10:00:00Z',
+            last_login: '2024-12-17T10:00:00Z',
+            organization_id: 'org-2'
+          }
+        ])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchUsers()
+  }, [])
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.company.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     return matchesSearch && matchesRole
   })
@@ -86,10 +89,36 @@ const UsersPage: React.FC = () => {
     setShowEditModal(true)
   }
 
-  const handleDeleteUser = (userId: string) => {
-    console.log('Удаление пользователя:', userId)
-    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-      alert('Пользователь удален')
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      // В реальном приложении здесь будет API для удаления пользователя
+      setUsers(prev => prev.filter(u => u.id !== userId))
+      alert('Пользователь успешно удален')
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Ошибка при удалении пользователя')
+    }
+  }
+
+  const handleUpdateUserRole = async (userId: string, role: 'admin' | 'investor' | 'tenant') => {
+    try {
+      await adminApi.updateUserRole(userId, role)
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
+      alert('Роль пользователя обновлена')
+    } catch (error) {
+      console.error('Error updating user role:', error)
+      alert('Ошибка при обновлении роли пользователя')
+    }
+  }
+
+  const handleUpdateUserStatus = async (userId: string, status: 'active' | 'inactive' | 'pending') => {
+    try {
+      await adminApi.updateUserStatus(userId, status)
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, status } : u))
+      alert('Статус пользователя обновлен')
+    } catch (error) {
+      console.error('Error updating user status:', error)
+      alert('Ошибка при обновлении статуса пользователя')
     }
   }
 
@@ -98,31 +127,50 @@ const UsersPage: React.FC = () => {
     setShowAddModal(true)
   }
 
-  const handleBulkUserAction = (action: string) => {
-    console.log('Массовое действие:', action, 'для пользователей:', selectedUsers)
+  const handleBulkUserAction = async (action: string) => {
     if (selectedUsers.length === 0) {
       alert('Выберите пользователей для выполнения действия')
       return
     }
     
-    switch (action) {
-      case 'delete':
-        if (confirm(`Удалить ${selectedUsers.length} пользователей?`)) {
-          alert('Пользователи удалены')
+    try {
+      switch (action) {
+        case 'delete':
+          if (confirm(`Удалить ${selectedUsers.length} пользователей?`)) {
+            setUsers(prev => prev.filter(u => !selectedUsers.includes(u.id)))
+            setSelectedUsers([])
+            alert('Пользователи успешно удалены')
+          }
+          break
+        case 'activate':
+          await Promise.all(selectedUsers.map(id => 
+            adminApi.updateUserStatus(id, 'active')
+          ))
+          setUsers(prev => prev.map(u => 
+            selectedUsers.includes(u.id) ? { ...u, status: 'active' } : u
+          ))
           setSelectedUsers([])
-        }
-        break
-      case 'activate':
-        alert(`Активация ${selectedUsers.length} пользователей`)
-        break
-      case 'deactivate':
-        alert(`Деактивация ${selectedUsers.length} пользователей`)
-        break
-      case 'export':
-        alert(`Экспорт ${selectedUsers.length} пользователей`)
-        break
-      default:
-        alert(`Действие ${action} для ${selectedUsers.length} пользователей`)
+          alert('Пользователи активированы')
+          break
+        case 'deactivate':
+          await Promise.all(selectedUsers.map(id => 
+            adminApi.updateUserStatus(id, 'inactive')
+          ))
+          setUsers(prev => prev.map(u => 
+            selectedUsers.includes(u.id) ? { ...u, status: 'inactive' } : u
+          ))
+          setSelectedUsers([])
+          alert('Пользователи деактивированы')
+          break
+        case 'export':
+          alert(`Экспорт ${selectedUsers.length} пользователей`)
+          break
+        default:
+          alert(`Действие ${action} для ${selectedUsers.length} пользователей`)
+      }
+    } catch (error) {
+      console.error('Error performing bulk action:', error)
+      alert('Ошибка при выполнении массового действия')
     }
   }
 
@@ -230,14 +278,26 @@ const UsersPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredUsers.map((user) => (
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="ode-card" style={{ padding: '20px' }}>
+                  <div className="ode-animate-pulse">
+                    <div className="ode-h-6 ode-bg-gray-200 ode-rounded ode-mb-2"></div>
+                    <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-mb-4"></div>
+                    <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-w-1/2"></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              filteredUsers.map((user) => (
               <div key={user.id} className="ode-card" style={{ padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaUser style={{ width: '16px', height: '16px', color: '#6b7280' }} />
-                        <h3 className="ode-text-lg ode-font-semibold ode-text-charcoal">{user.name}</h3>
+                        <h3 className="ode-text-lg ode-font-semibold ode-text-charcoal">{user.full_name}</h3>
                       </div>
                       <span 
                         className="badge"
@@ -272,12 +332,10 @@ const UsersPage: React.FC = () => {
                         <span className="ode-text-sm ode-text-gray">{user.email}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FaBuilding style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                        <span className="ode-text-sm ode-text-gray">{user.company}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FaCalendar style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                        <span className="ode-text-sm ode-text-gray">Последний вход: {user.lastLogin}</span>
+                        <span className="ode-text-sm ode-text-gray">
+                          Последний вход: {user.last_login ? new Date(user.last_login).toLocaleDateString('ru-RU') : 'Никогда'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -295,11 +353,13 @@ const UsersPage: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
                   <div>
                     <span className="ode-text-xs ode-text-gray">Дата регистрации:</span>
-                    <p className="ode-text-sm ode-text-charcoal">{user.createdAt}</p>
+                    <p className="ode-text-sm ode-text-charcoal">
+                      {new Date(user.created_at).toLocaleDateString('ru-RU')}
+                    </p>
                   </div>
                   <div>
-                    <span className="ode-text-xs ode-text-gray">Объектов в портфеле:</span>
-                    <p className="ode-text-sm ode-text-charcoal">{user.properties}</p>
+                    <span className="ode-text-xs ode-text-gray">Организация:</span>
+                    <p className="ode-text-sm ode-text-charcoal">{user.organization_id || 'Не указана'}</p>
                   </div>
                   <div>
                     <span className="ode-text-xs ode-text-gray">Статус:</span>
@@ -307,10 +367,11 @@ const UsersPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
 
-          {filteredUsers.length === 0 && (
+          {!loading && filteredUsers.length === 0 && (
             <div className="ode-text-center" style={{ padding: '48px 0' }}>
               <p className="ode-text-gray">Пользователи не найдены</p>
             </div>

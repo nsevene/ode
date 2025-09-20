@@ -96,6 +96,11 @@ const Header: React.FC = () => {
                       Мой кабинет
                     </Link>
                   )}
+                  {user?.role === UserRole.Tenant && (
+                    <Link to="/tenants/dashboard" className="ode-btn ode-btn-primary">
+                      Мой кабинет
+                    </Link>
+                  )}
                   {(user?.role === UserRole.Tenant || user?.role === UserRole.Investor) && (
                     <Link to="/dataroom" className="ode-btn ode-btn-secondary">Data Room</Link>
                   )}

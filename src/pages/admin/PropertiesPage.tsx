@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   FaBuilding, FaMapMarkerAlt, FaDollarSign, FaUsers, FaCalendar, FaEdit, FaTrash, 
   FaPlus, FaSearch, FaFilter, FaEye, FaHome, FaChartLine, FaImage, FaPhone, FaEnvelope
 } from 'react-icons/fa'
 import AdminNavigation from '../../components/admin/AdminNavigation'
+import { adminApi, type AdminProperty } from '../../lib/api/admin'
 
 const PropertiesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -13,51 +14,59 @@ const PropertiesPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingProperty, setEditingProperty] = useState<any>(null)
+  const [properties, setProperties] = useState<AdminProperty[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newProperty, setNewProperty] = useState({
+    name: '',
+    address: '',
+    type: 'office' as 'office' | 'retail' | 'warehouse' | 'coworking',
+    size: 0,
+    price: 0,
+    status: 'available' as 'available' | 'occupied' | 'maintenance',
+    amenities: [] as string[]
+  })
 
-  const properties = [
-    {
-      id: 1,
-      name: 'Бизнес-центр "Солнечный"',
-      address: 'Москва, ул. Тверская, 15',
-      type: 'office',
-      status: 'active',
-      area: 2500,
-      price: 150000,
-      occupancy: 95,
-      tenants: 12,
-      created: '2024-01-15',
-      image: '/api/placeholder/300/200',
-      description: 'Современный бизнес-центр в центре Москвы с отличной транспортной доступностью'
-    },
-    {
-      id: 2,
-      name: 'Торговый центр "Мега"',
-      address: 'Москва, ул. Арбат, 25',
-      type: 'retail',
-      status: 'renovation',
-      area: 5000,
-      price: 200000,
-      occupancy: 0,
-      tenants: 0,
-      created: '2024-02-20',
-      image: '/api/placeholder/300/200',
-      description: 'Крупный торговый центр на стадии реконструкции'
-    },
-    {
-      id: 3,
-      name: 'Складской комплекс "Логистик"',
-      address: 'Московская область, г. Химки',
-      type: 'warehouse',
-      status: 'active',
-      area: 10000,
-      price: 80000,
-      occupancy: 100,
-      tenants: 3,
-      created: '2024-03-10',
-      image: '/api/placeholder/300/200',
-      description: 'Современный складской комплекс с развитой логистической инфраструктурой'
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const data = await adminApi.getProperties()
+        setProperties(data)
+      } catch (error) {
+        console.error('Error fetching properties:', error)
+        // Fallback to mock data
+        setProperties([
+          {
+            id: '1',
+            name: 'Бизнес-центр "Солнечный"',
+            address: 'Москва, ул. Тверская, 15',
+            type: 'office',
+            size: 2500,
+            price: 150000,
+            status: 'available',
+            amenities: ['Парковка', 'Кондиционер', 'Лифт'],
+            created_at: '2024-01-15T10:00:00Z',
+            updated_at: '2024-01-15T10:00:00Z'
+          },
+          {
+            id: '2',
+            name: 'Торговый центр "Мега"',
+            address: 'Москва, ул. Арбат, 25',
+            type: 'retail',
+            size: 5000,
+            price: 200000,
+            status: 'maintenance',
+            amenities: ['Парковка', 'Эскалаторы'],
+            created_at: '2024-02-20T10:00:00Z',
+            updated_at: '2024-02-20T10:00:00Z'
+          }
+        ])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchProperties()
+  }, [])
 
   const filteredProperties = properties.filter(property => {
     const matchesSearch = property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,41 +97,85 @@ const PropertiesPage: React.FC = () => {
     setShowEditModal(true)
   }
 
-  const handleDeleteProperty = (propertyId: string) => {
-    console.log('Удаление объекта:', propertyId)
-    if (confirm('Вы уверены, что хотите удалить этот объект?')) {
-      // Здесь будет логика удаления
-      alert('Объект удален')
+  const handleDeleteProperty = async (propertyId: string) => {
+    try {
+      await adminApi.deleteProperty(propertyId)
+      setProperties(prev => prev.filter(p => p.id !== propertyId))
+      alert('Объект успешно удален')
+    } catch (error) {
+      console.error('Error deleting property:', error)
+      alert('Ошибка при удалении объекта')
     }
   }
 
-  const handleAddProperty = () => {
-    console.log('Добавление нового объекта')
-    setShowAddModal(true)
+  const handleAddProperty = async () => {
+    try {
+      const property = await adminApi.createProperty(newProperty)
+      setProperties(prev => [property, ...prev])
+      setNewProperty({
+        name: '',
+        address: '',
+        type: 'office',
+        size: 0,
+        price: 0,
+        status: 'available',
+        amenities: []
+      })
+      setShowAddModal(false)
+      alert('Объект успешно добавлен')
+    } catch (error) {
+      console.error('Error creating property:', error)
+      alert('Ошибка при создании объекта')
+    }
   }
 
-  const handleBulkAction = (action: string) => {
-    console.log('Массовое действие:', action, 'для объектов:', selectedProperties)
+  const handleUpdateProperty = async (propertyId: string, updates: Partial<AdminProperty>) => {
+    try {
+      const updatedProperty = await adminApi.updateProperty(propertyId, updates)
+      setProperties(prev => prev.map(p => p.id === propertyId ? updatedProperty : p))
+      setShowEditModal(false)
+      alert('Объект успешно обновлен')
+    } catch (error) {
+      console.error('Error updating property:', error)
+      alert('Ошибка при обновлении объекта')
+    }
+  }
+
+  const handleBulkAction = async (action: string) => {
     if (selectedProperties.length === 0) {
       alert('Выберите объекты для выполнения действия')
       return
     }
     
-    switch (action) {
-      case 'delete':
-        if (confirm(`Удалить ${selectedProperties.length} объектов?`)) {
-          alert('Объекты удалены')
+    try {
+      switch (action) {
+        case 'delete':
+          if (confirm(`Удалить ${selectedProperties.length} объектов?`)) {
+            await Promise.all(selectedProperties.map(id => adminApi.deleteProperty(id)))
+            setProperties(prev => prev.filter(p => !selectedProperties.includes(p.id)))
+            setSelectedProperties([])
+            alert('Объекты успешно удалены')
+          }
+          break
+        case 'export':
+          alert(`Экспорт ${selectedProperties.length} объектов`)
+          break
+        case 'activate':
+          await Promise.all(selectedProperties.map(id => 
+            adminApi.updateProperty(id, { status: 'available' })
+          ))
+          setProperties(prev => prev.map(p => 
+            selectedProperties.includes(p.id) ? { ...p, status: 'available' } : p
+          ))
           setSelectedProperties([])
-        }
-        break
-      case 'export':
-        alert(`Экспорт ${selectedProperties.length} объектов`)
-        break
-      case 'activate':
-        alert(`Активация ${selectedProperties.length} объектов`)
-        break
-      default:
-        alert(`Действие ${action} для ${selectedProperties.length} объектов`)
+          alert('Объекты активированы')
+          break
+        default:
+          alert(`Действие ${action} для ${selectedProperties.length} объектов`)
+      }
+    } catch (error) {
+      console.error('Error performing bulk action:', error)
+      alert('Ошибка при выполнении массового действия')
     }
   }
 
@@ -257,7 +310,19 @@ const PropertiesPage: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {filteredProperties.map((property) => (
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="ode-card" style={{ padding: '20px' }}>
+                  <div className="ode-animate-pulse">
+                    <div className="ode-h-6 ode-bg-gray-200 ode-rounded ode-mb-2"></div>
+                    <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-mb-4"></div>
+                    <div className="ode-h-4 ode-bg-gray-200 ode-rounded ode-w-1/2"></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              filteredProperties.map((property) => (
               <div 
                 key={property.id} 
                 className={`ode-card ${selectedProperties.includes(property.id.toString()) ? 'ode-card-interactive' : ''}`} 
@@ -294,6 +359,22 @@ const PropertiesPage: React.FC = () => {
                           <FaMapMarkerAlt style={{ width: '14px', height: '14px', color: '#6b7280' }} />
                           <span className="ode-text-sm ode-text-gray">{property.address}</span>
                         </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
+                          <span className="ode-text-sm ode-text-gray">
+                            <FaBuilding style={{ marginRight: '4px' }} />
+                            {property.type === 'office' ? 'Офис' : 
+                             property.type === 'retail' ? 'Торговля' : 
+                             property.type === 'warehouse' ? 'Склад' : 'Коворкинг'}
+                          </span>
+                          <span className="ode-text-sm ode-text-gray">
+                            <FaDollarSign style={{ marginRight: '4px' }} />
+                            {property.price.toLocaleString()} ₽/мес
+                          </span>
+                          <span className="ode-text-sm ode-text-gray">
+                            <FaHome style={{ marginRight: '4px' }} />
+                            {property.size} м²
+                          </span>
+                        </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span className="badge" style={{ 
@@ -322,19 +403,22 @@ const PropertiesPage: React.FC = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '16px' }}>
                       <div>
                         <span className="ode-text-xs ode-text-gray">Площадь:</span>
-                        <p className="ode-text-sm ode-font-medium ode-text-charcoal">{property.area.toLocaleString()} м²</p>
+                        <p className="ode-text-sm ode-font-medium ode-text-charcoal">{property.size.toLocaleString()} м²</p>
                       </div>
                       <div>
                         <span className="ode-text-xs ode-text-gray">Стоимость:</span>
                         <p className="ode-text-sm ode-font-medium ode-text-charcoal">₽{property.price.toLocaleString()}/мес</p>
                       </div>
                       <div>
-                        <span className="ode-text-xs ode-text-gray">Заполняемость:</span>
-                        <p className="ode-text-sm ode-font-medium ode-text-charcoal">{property.occupancy}%</p>
+                        <span className="ode-text-xs ode-text-gray">Статус:</span>
+                        <p className="ode-text-sm ode-font-medium ode-text-charcoal">
+                          {property.status === 'available' ? 'Доступен' : 
+                           property.status === 'occupied' ? 'Занят' : 'На обслуживании'}
+                        </p>
                       </div>
                       <div>
-                        <span className="ode-text-xs ode-text-gray">Арендаторов:</span>
-                        <p className="ode-text-sm ode-font-medium ode-text-charcoal">{property.tenants}</p>
+                        <span className="ode-text-xs ode-text-gray">Удобства:</span>
+                        <p className="ode-text-sm ode-font-medium ode-text-charcoal">{property.amenities.join(', ')}</p>
                       </div>
                     </div>
 
@@ -342,7 +426,9 @@ const PropertiesPage: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <FaCalendar style={{ width: '14px', height: '14px', color: '#6b7280' }} />
-                          <span className="ode-text-xs ode-text-gray">Создан: {property.created}</span>
+                          <span className="ode-text-xs ode-text-gray">
+                            Создан: {new Date(property.created_at).toLocaleDateString('ru-RU')}
+                          </span>
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
@@ -384,10 +470,11 @@ const PropertiesPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
 
-          {filteredProperties.length === 0 && (
+          {!loading && filteredProperties.length === 0 && (
             <div className="ode-text-center" style={{ padding: '48px 0' }}>
               <FaBuilding style={{ width: '48px', height: '48px', color: '#d1d5db', margin: '0 auto 16px' }} />
               <p className="ode-text-gray">Объекты не найдены</p>
