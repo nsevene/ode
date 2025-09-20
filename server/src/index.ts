@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 // Import routes
 import authRoutes from './routes/auth';
 import storageRoutes from './routes/storage';
+import usersRoutes from './routes/users';
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +58,9 @@ app.use('/api/auth', authRoutes);
 
 // Storage routes
 app.use('/api/storage', storageRoutes);
+
+// Users routes  
+app.use('/api/users', usersRoutes);
 
 // 404 handler
 app.use((req, res) => {
