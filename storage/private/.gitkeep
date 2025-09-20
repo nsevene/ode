@@ -1,0 +1,2 @@
+# Private file storage - NOT served directly by web server
+# Files are accessible only through authenticated API endpoints
