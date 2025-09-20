@@ -71,7 +71,6 @@ const InvestorNavigation: React.FC = () => {
                 </div>
                 <div className="ode-investor-nav-content">
                   <div className="ode-investor-nav-label">{item.label}</div>
-                  <div className="ode-investor-nav-description">{item.description}</div>
                 </div>
               </Link>
             </li>
