@@ -90,7 +90,7 @@ const AdminNavigation: React.FC = () => {
       </div>
 
       <nav className="ode-admin-nav-menu">
-        <ul className="ode-space-y-1">
+        <ul className="ode-admin-nav-horizontal">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
