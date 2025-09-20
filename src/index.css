@@ -445,7 +445,7 @@ div.ode-container {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 40;
+  z-index: 60;
 }
 
 /* Mobile navigation menu */
@@ -457,7 +457,7 @@ div.ode-container {
   width: 280px;
   background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
-  z-index: 50;
+  z-index: 70;
   transform: translateX(0);
   transition: transform 0.3s ease-in-out;
   overflow-y: auto;
@@ -575,6 +575,94 @@ div.ode-container {
   color: #6b7280 !important;
   font-size: 14px !important;
   flex-shrink: 0 !important;
+}
+
+/* Investor Navigation Mobile Styles */
+.ode-investor-hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--ode-charcoal);
+  font-size: 20px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.ode-investor-hamburger:hover {
+  background: #f3f4f6;
+}
+
+.ode-investor-nav-desktop {
+  display: flex;
+}
+
+/* Mobile overlay */
+.ode-investor-mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 60;
+}
+
+/* Mobile navigation menu */
+.ode-investor-nav-mobile {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 280px;
+  background: white;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  z-index: 70;
+  transform: translateX(0);
+  transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
+}
+
+.ode-investor-nav-mobile-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-top: 60px;
+}
+
+.ode-investor-nav-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  color: #374151;
+  text-decoration: none;
+  border-bottom: 1px solid #f3f4f6;
+  transition: all 0.2s ease;
+}
+
+.ode-investor-nav-mobile-link:hover {
+  background: #f9fafb;
+  color: var(--ode-burgundy);
+}
+
+.ode-investor-nav-mobile-link-active {
+  background: #fef2f2;
+  color: var(--ode-burgundy);
+  border-left: 4px solid var(--ode-burgundy);
+}
+
+.ode-investor-nav-mobile-icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.ode-investor-nav-mobile-text {
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .ode-investor-nav-item-active .ode-investor-nav-icon {
@@ -1360,6 +1448,21 @@ div.ode-container {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+  }
+  
+  /* Investor Navigation Mobile */
+  .ode-investor-navigation {
+    padding: 12px 16px !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+  }
+  
+  .ode-investor-nav-desktop {
+    display: none !important;
+  }
+  
+  .ode-investor-hamburger {
+    display: block !important;
   }
 }
 

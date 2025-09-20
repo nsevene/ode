@@ -1,15 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { 
   FaTachometerAlt, 
   FaChartLine, 
   FaBuilding, 
   FaCog, 
-  FaDatabase 
+  FaDatabase,
+  FaBars,
+  FaTimes
 } from 'react-icons/fa'
 
 const InvestorNavigation: React.FC = () => {
   const location = useLocation()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navItems = [
     {
@@ -55,7 +58,8 @@ const InvestorNavigation: React.FC = () => {
         </p>
       </div>
 
-      <ul className="ode-investor-nav-list">
+      {/* Desktop Navigation */}
+      <ul className="ode-investor-nav-list ode-investor-nav-desktop">
         {navItems.map((item) => {
           const IconComponent = item.icon
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
@@ -77,6 +81,48 @@ const InvestorNavigation: React.FC = () => {
           )
         })}
       </ul>
+
+      {/* Mobile Hamburger Button */}
+      <button 
+        className="ode-investor-hamburger"
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        aria-label="Toggle navigation menu"
+      >
+        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      {/* Mobile Navigation Overlay */}
+      {isMobileMenuOpen && (
+        <>
+          <div 
+            className="ode-investor-mobile-overlay"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <nav className="ode-investor-nav-mobile">
+            <ul className="ode-investor-nav-mobile-list">
+              {navItems.map((item) => {
+                const IconComponent = item.icon
+                const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+                
+                return (
+                  <li key={item.path}>
+                    <Link
+                      to={item.path}
+                      className={`ode-investor-nav-mobile-link ${isActive ? 'ode-investor-nav-mobile-link-active' : ''}`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <IconComponent className="ode-investor-nav-mobile-icon" />
+                      <span className="ode-investor-nav-mobile-text">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+        </>
+      )}
     </nav>
   )
 }
