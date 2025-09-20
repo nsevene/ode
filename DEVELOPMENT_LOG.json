@@ -10,11 +10,11 @@
       "id": "1.1",
       "title": "Создание схемы базы данных",
       "category": "Database Setup",
-      "status": "pending",
+      "status": "in_progress",
       "priority": "critical",
       "estimated_hours": 3,
       "dependencies": ["Supabase project configured"],
-      "started_at": null,
+      "started_at": "2025-09-20T12:45:00Z",
       "completed_at": null,
       "files_to_create": [
         "supabase/migrations/001_create_profiles.sql",
