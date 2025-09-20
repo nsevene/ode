@@ -3,6 +3,7 @@ import {
   FaCog, FaUsers, FaShieldAlt, FaBell, FaPalette, FaDatabase, FaServer, 
   FaSave, FaUndo, FaCheck, FaTimes, FaEdit, FaPlus, FaTrash, FaEye
 } from 'react-icons/fa'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'general' | 'users' | 'security' | 'notifications' | 'appearance' | 'system'>('general')
@@ -406,16 +407,17 @@ const SettingsPage: React.FC = () => {
   )
 
   return (
-    <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <div className="ode-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-            <div>
-              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Настройки системы</h1>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Настройки системы</h1>
               <p className="ode-text-gray">Конфигурация системы, роли и права доступа</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button className="ode-btn ode-btn-secondary">
                 <FaUndo style={{ marginRight: '8px' }} />
                 Сбросить
@@ -425,11 +427,8 @@ const SettingsPage: React.FC = () => {
                 Сохранить
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="ode-container" style={{ padding: '32px 0' }}>
+            <div style={{ marginTop: '32px' }}>
         {/* Tabs */}
         <div className="tab-list">
             {tabs.map((tab) => (
@@ -455,7 +454,10 @@ const SettingsPage: React.FC = () => {
             <p className="ode-text-gray">Модуль внешнего вида в разработке</p>
           </div>
         )}
-        {activeTab === 'system' && renderSystem()}
+              {activeTab === 'system' && renderSystem()}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

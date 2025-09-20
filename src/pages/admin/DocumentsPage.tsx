@@ -3,6 +3,7 @@ import {
   FaFolder, FaFile, FaUpload, FaDownload, FaTrash, FaEdit, FaEye, FaSearch, 
   FaFolderPlus, FaUnlock, FaShare, FaCopy, FaArrowsAlt as FaMove
 } from 'react-icons/fa'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 
 const DocumentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -211,16 +212,17 @@ const DocumentsPage: React.FC = () => {
   }
 
   return (
-    <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <div className="ode-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-            <div>
-              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Управление документами</h1>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Управление документами</h1>
               <p className="ode-text-gray">Организация и управление файлами и документами</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button className="ode-btn ode-btn-primary">
                 <FaUpload style={{ marginRight: '8px' }} />
                 Загрузить файлы
@@ -230,11 +232,8 @@ const DocumentsPage: React.FC = () => {
                 Создать папку
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="ode-container" style={{ padding: '32px 0' }}>
+            <div style={{ marginTop: '32px' }}>
         {/* Filters */}
         <div className="ode-card ode-mb-4">
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -434,6 +433,9 @@ const DocumentsPage: React.FC = () => {
               <p className="ode-text-gray">Документы не найдены</p>
             </div>
           )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

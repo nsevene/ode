@@ -3,6 +3,7 @@ import {
   FaChartLine, FaUsers, FaBuilding, FaDollarSign, 
   FaDownload, FaArrowUp, FaArrowDown
 } from 'react-icons/fa'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 
 const AnalyticsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'occupancy' | 'tenants'>('overview')
@@ -254,27 +255,24 @@ const AnalyticsPage: React.FC = () => {
   )
 
   return (
-    <>
-      <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-        {/* Header */}
-        <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-          <div className="ode-container">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-              <div>
-                <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Аналитика и отчеты</h1>
-                <p className="ode-text-gray">Детальная аналитика по всем аспектам бизнеса</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <button className="ode-btn ode-btn-primary">
-                  <FaDownload style={{ marginRight: '8px' }} />
-                  Экспорт отчета
-                </button>
-              </div>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Аналитика и отчеты</h1>
+              <p className="ode-text-gray">Детальная аналитика по всем аспектам бизнеса</p>
             </div>
-          </div>
-        </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button className="ode-btn ode-btn-primary">
+                <FaDownload style={{ marginRight: '8px' }} />
+                Экспорт отчета
+              </button>
+            </div>
 
-        <div className="ode-container" style={{ padding: '32px 0' }}>
+            <div style={{ marginTop: '32px' }}>
           {/* Tabs */}
           <div className="tab-list">
               {tabs.map((tab) => (
@@ -288,15 +286,17 @@ const AnalyticsPage: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Content */}
-          {activeTab === 'overview' && renderOverview()}
-          {activeTab === 'revenue' && renderRevenue()}
-          {activeTab === 'occupancy' && renderOccupancy()}
-          {activeTab === 'tenants' && renderTenants()}
+            {/* Content */}
+            {activeTab === 'overview' && renderOverview()}
+            {activeTab === 'revenue' && renderRevenue()}
+            {activeTab === 'occupancy' && renderOccupancy()}
+            {activeTab === 'tenants' && renderTenants()}
+            </div>
+          </div>
         </div>
-    </>
+      </div>
+    </div>
   )
 }
 

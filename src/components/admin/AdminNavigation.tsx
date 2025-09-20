@@ -93,7 +93,7 @@ const AdminNavigation: React.FC = () => {
         <ul className="ode-space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
             
             return (
               <li key={item.path}>

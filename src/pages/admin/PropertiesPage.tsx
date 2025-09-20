@@ -3,6 +3,7 @@ import {
   FaBuilding, FaMapMarkerAlt, FaDollarSign, FaUsers, FaCalendar, FaEdit, FaTrash, 
   FaPlus, FaSearch, FaFilter, FaEye, FaHome, FaChartLine, FaImage, FaPhone, FaEnvelope
 } from 'react-icons/fa'
+import AdminNavigation from '../../components/admin/AdminNavigation'
 
 const PropertiesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -154,16 +155,17 @@ const PropertiesPage: React.FC = () => {
   }
 
   return (
-    <div className="ode-bg-gray" style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <div className="ode-bg-white" style={{ boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <div className="ode-container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 0' }}>
-            <div>
-              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal">Управление недвижимостью</h1>
+    <div className="ode-bg-gray" style={{ minHeight: '100vh', padding: '32px 0' }}>
+      <div className="ode-container">
+        <div className="ode-dashboard-layout">
+          <AdminNavigation />
+          <div className="ode-dashboard-content">
+            {/* Header */}
+            <div className="ode-dashboard-header">
+              <h1 className="ode-text-3xl ode-font-bold ode-text-charcoal ode-mb-2">Управление недвижимостью</h1>
               <p className="ode-text-gray">Добавление, редактирование и управление объектами недвижимости</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={handleAddProperty} className="ode-btn ode-btn-primary">
                 <FaPlus style={{ marginRight: '8px' }} />
                 Добавить объект
@@ -173,11 +175,8 @@ const PropertiesPage: React.FC = () => {
                 Аналитика
               </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <div className="ode-container" style={{ padding: '32px 0' }}>
+            <div style={{ marginTop: '32px' }}>
         {/* Filters */}
         <div className="ode-card ode-mb-4">
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -394,6 +393,9 @@ const PropertiesPage: React.FC = () => {
               <p className="ode-text-gray">Объекты не найдены</p>
             </div>
           )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
