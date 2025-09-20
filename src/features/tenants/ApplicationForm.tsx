@@ -5,6 +5,7 @@ import * as yup from 'yup'
 import { FaSpinner, FaCheck, FaTimes, FaUser, FaBuilding, FaPhone, FaEnvelope, FaFileAlt, FaLink, FaStickyNote } from 'react-icons/fa'
 import type { TenantApplicationFormData } from '../../types/tenant-application'
 import { submitTenantApplication, submitTenantApplicationDemo } from '../../lib/tenant-api'
+import { useAuthStore } from '../../store/authStore'
 
 // Validation schema
 const schema = yup.object({
@@ -26,6 +27,8 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSuccess, onError })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [submitMessage, setSubmitMessage] = useState('')
+  
+  const { accessToken } = useAuthStore()
 
   const {
     register,
@@ -51,12 +54,17 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSuccess, onError })
     setSubmitMessage('')
 
     try {
-      // Check if we're in demo mode (no Supabase URL)
-      const isDemoMode = !import.meta.env.VITE_SUPABASE_URL
+      // Check if user is authenticated
+      if (!accessToken) {
+        throw new Error('Для отправки заявки необходимо войти в систему')
+      }
+      
+      // Check if we're in demo mode (no backend URL)
+      const isDemoMode = !import.meta.env.VITE_AUTH_API_URL && window.location.hostname === 'localhost'
       
       const result = isDemoMode 
         ? await submitTenantApplicationDemo(data)
-        : await submitTenantApplication(data)
+        : await submitTenantApplication(data, accessToken)
 
       setSubmitStatus('success')
       setSubmitMessage(result.message || 'Заявка успешно отправлена!')
@@ -69,11 +77,12 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ onSuccess, onError })
       reset()
     } catch (error) {
       console.error('Error submitting application:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при отправке заявки'
       setSubmitStatus('error')
-      setSubmitMessage(error instanceof Error ? error.message : 'Произошла ошибка при отправке заявки')
+      setSubmitMessage(errorMessage)
       
       if (onError) {
-        onError(submitMessage)
+        onError(errorMessage)
       }
     } finally {
       setIsSubmitting(false)

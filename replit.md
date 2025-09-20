@@ -136,6 +136,17 @@ npm run lint
 - Опционально: настройка .eslintignore для исключения legacy кода
 
 ## Последние изменения
+
+**20.09.2025 - TASK 3.1 COMPLETED: Реальная форма подачи заявки арендаторов**
+- **СОЗДАН полнофункциональный backend API** (`/api/tenant-applications`) с JWT аутентификацией
+- **ИНТЕГРАЦИЯ с PostgreSQL** - заявки сохраняются в реальную БД tenant_applications 
+- **MULTI-TENANT поддержка** - заявки привязаны к организации пользователя
+- **ОБНОВЛЕНА форма заявки** - теперь использует JWT backend вместо Supabase functions
+- **ОБНОВЛЕНА admin панель** - ApplicationsPage теперь показывает реальные данные из БД
+- **ФУНКЦИИ управления** - админы могут одобрять/отклонять заявки с комментариями
+- **AUDIT LOGGING** - все действия с заявками логируются в audit_logs
+- **REAL-TIME интеграция** - форма подачи → БД → admin панель работает end-to-end
+
 **20.09.2025 - Phase 2: Real Database Integration**
 - **ЗАВЕРШЕНА TASK 1.1 & 1.2:** Создана полная схема PostgreSQL с multi-tenancy
 - **Создано 13 таблиц:** profiles, organizations, tenant_applications, properties, investments, documents, audit_logs + multi-tenancy
